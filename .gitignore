@@ -5,8 +5,10 @@ Thumbs.db
 # Editores
 .vscode/
 .idea/
+.github/
 *.swp
 *.swo
 
 # Node.js
 node_modules/
+Backup/
