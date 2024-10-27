@@ -624,6 +624,7 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
   }
 
   //console.log(scene);
+  //console.log(scene); versão melhorada
   // para afetar o canvas dentro do grid configuration tool
   // modificar o canvas.stage resolve, mas ele não tem como transformar a arte
   //const background = scene.stage.background;
