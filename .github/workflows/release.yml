@@ -1,0 +1,46 @@
+# .github/workflows/release.yml
+name: Release Creation
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get version
+        id: get-version
+        run: echo "version=$(node -p "require('./module.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Create zip file
+        run: |
+          # Criar pasta temporária
+          mkdir temp_release
+          
+          # Copiar arquivos relevantes
+          rsync -av --progress . ./temp_release --exclude .git --exclude .github --exclude temp_release --exclude node_modules --exclude package.json --exclude package-lock.json
+          
+          # Criar ZIP
+          cd temp_release
+          zip -r ../module.zip *
+          cd ..
+          rm -rf temp_release
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            module.json
+            module.zip
+          name: Release ${{ steps.get-version.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
