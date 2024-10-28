@@ -1,17 +1,22 @@
+/*
+  To-Do:
+    [DONE] Ajeitar o TileHUD que tá maluco
+    [DONE] adicionar offset na cena
+    [DONE] token: desabilitar para somente o próprio token (low priority)
+  
+  Lembrar:
+    Desativei os requestAnimationFrame para ver se está tudo bem.
+*/
+
+//<!-- module.json -->
 {
-  "title": "Isometric Perspective",
   "id": "isometric-perspective",
+  "title": "Isometric Perspective",
   "description": "Altera a perspectiva do canvas para isometrica.",
-  "version": "0.0.5",
   "esmodules": [
     "scripts/isoCanvas.js"
   ],
-  "authors": [
-    {
-      "name": "marceloabner",
-      "email": "marceloabner@gmail.com"
-    }
-  ],
+  "version": "0.0.5",
   "compatibility": {
     "minimum": "11",
     "verified": "12"

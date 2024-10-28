@@ -1,3 +1,13 @@
+/*
+  To-Do:
+    [DONE] Ajeitar o TileHUD que tá maluco
+    [DONE] adicionar offset na cena
+    [DONE] token: desabilitar para somente o próprio token (low priority)
+  
+  Lembrar:
+    Desativei os requestAnimationFrame para ver se está tudo bem.
+*/
+
 const MODULE_ID = "isometric-perspective";
 
 // Hook para registrar a configuração do módulo no Foundry VTT
@@ -10,8 +20,18 @@ Hooks.once("init", function() {
     config: true,    // false if you dont want it to show in module config
     type: Boolean,   // You want the primitive class, e.g. Number, not the name of the class as a string
     default: true, 
-    onChange: settings => window.location.reload()
-    //requiresReload: true, // true if you want to prompt the user to reload
+    requiresReload: true // true if you want to prompt the user to reload
+    //onChange: settings => window.location.reload() // recarrega automaticamente
+  });
+
+  game.settings.register(MODULE_ID, 'enableHeightAdjustment', {
+    name: 'Enable Height Adjustment',
+    hint: 'Toggle whether tokens adjust their position based on their height',
+    scope: 'world',
+    config: true,
+    default: false,
+    type: Boolean,
+    requiresReload: true
   });
 
   game.settings.register(MODULE_ID, 'debug', {
@@ -21,7 +41,8 @@ Hooks.once("init", function() {
     config: true,
     default: false,
     type: Boolean,
-    onChange: settings => window.location.reload()
+    requiresReload: true
+    //onChange: settings => window.location.reload()
   });
 });
 
@@ -32,7 +53,7 @@ Hooks.on("renderSceneConfig", async (sceneConfig, html, data) => {
   const tabHtml = await renderTemplate("modules/isometric-perspective/templates/scene-config.html");
   
   // Adiciona o botão e o conteúdo da aba logo após a última aba
-  html.find('nav.sheet-tabs').append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
+  html.find('nav.sheet-tabs:not(.secondary-tabs)').append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
   html.find('div.tab[data-tab="ambience"]').after(tabHtml);
 
   // Inicializa os valores dos controles
@@ -54,14 +75,14 @@ Hooks.on("renderSceneConfig", async (sceneConfig, html, data) => {
   scaleSlider.on('input', function() {
     scaleDisplay.text(this.value);
   });
-
+  
   // Handler para o formulário de submit
-  html.closest('form').on('submit', async (event) => {
+  html.find('form').on('submit', async (event) => {
     // Coleta os valores atuais dos controles
     const newIsometric = isoCheckbox.prop("checked");
     const newBackground = bgCheckbox.prop("checked");
     const newScale = parseFloat(scaleSlider.val());
-
+    
     // Atualiza as flags com os novos valores
     if (newIsometric) {
       await sceneConfig.object.setFlag(MODULE_ID, "isometricEnabled", true);
@@ -84,14 +105,22 @@ Hooks.on("renderSceneConfig", async (sceneConfig, html, data) => {
         applyBackgroundTransformation(sceneConfig.object, newIsometric, newBackground);
       });
     }
+
+    //requestAnimationFrame(() => {
+      //await canvas.draw();
+      //console.log("teste");
+      //await canvas.background.refresh();
+    //});
   });
 
-  // Re-inicializa as tabs
+  /*// Re-inicializa as tabs
   sceneConfig.options.tabs[0].active = "isometric";
   const tabs = sceneConfig._tabs[0];
   tabs.bind(html[0]);
+  */
 });
 
+/*
 Hooks.on("renderGridConfig", (app, html, data) => {
   const scene = app.object;
   if (!scene) return;
@@ -117,6 +146,7 @@ Hooks.on("renderGridConfig", (app, html, data) => {
     }
   });
 });
+*/
 
 Hooks.on("renderTokenConfig", async (app, html, data) => {
   // Carrega o template HTML para a nova aba
@@ -127,7 +157,7 @@ Hooks.on("renderTokenConfig", async (app, html, data) => {
   });
   
   // Adiciona a nova aba ao menu
-  const tabs = html.find('.tabs');
+  const tabs = html.find('.tabs:not(.secondary-tabs)');
   tabs.append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
   
   // Adiciona o conteúdo da aba após a última aba existente
@@ -152,7 +182,6 @@ Hooks.on("renderTokenConfig", async (app, html, data) => {
   }
 });
 
-
 Hooks.on("renderTileConfig", async (app, html, data) => {
   // Carrega o template HTML para a nova aba
   const tabHtml = await renderTemplate("modules/isometric-perspective/templates/tile-config.html", {
@@ -160,7 +189,7 @@ Hooks.on("renderTileConfig", async (app, html, data) => {
   });
   
   // Adiciona a nova aba ao menu
-  const tabs = html.find('.tabs');
+  const tabs = html.find('.tabs:not(.secondary-tabs)');
   tabs.append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
   
   // Adiciona o conteúdo da aba após a última aba existente
@@ -282,7 +311,8 @@ Hooks.on("createToken", (tokenDocument) => {
   
   const scene = token.scene;
   const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-  requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
+  applyTokenTransformation(token, isIsometric);
+  //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
 });
 
 // Mantenha o hook updateToken
@@ -294,7 +324,8 @@ Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
   const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
   
   if (updateData.flags?.[MODULE_ID] || updateData.x !== undefined || updateData.y !== undefined) {
-    requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
+    applyTokenTransformation(token, isIsometric);
+    //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
   }
 });
 
@@ -311,8 +342,15 @@ Hooks.on("refreshToken", (token) => {
 // Hook para definir flags padrão antes da criação do Tile
 Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
   // Define a flag 'scale' com valor padrão 1
+  createData.flags[MODULE_ID] = createData.flags[MODULE_ID] || {};
+  createData.flags[MODULE_ID].scale = 1;
+});
+/* versão antiga do chatgpt
+Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
+  // Define a flag 'scale' com valor padrão 1
   setProperty(createData, `flags.${MODULE_ID}.scale`, 1);
 });
+*/
 
 Hooks.on("createTile", (tileDocument) => {
   const tile = canvas.tiles.get(tileDocument.id);
@@ -401,26 +439,63 @@ function calculateIsometricPosition(x, y) {
 
 // Função para ajustar a posição do HUD
 function adjustHUDPosition(hud, html) {
-  const token = hud.object;
-  const { width, height } = token;
-  const { x, y } = token.position;
+  const object = hud.object;
+  const { width, height } = object;
+  const { x, y } = object.position;
+  
+  // Calcula a posição isométrica do topo central do object
+  //const topCenter = calculateIsometricPosition(x + (width / 2), y);
+  //const topCenter = calculateIsometricPosition(x + (width / 2), y + (height / 2));
 
-  // Calcula a posição isométrica do topo central do token
-  const topCenter = calculateIsometricPosition(x + (width / 2), y);
+  // Aplica um offset vertical baseado na altura do object para posicionar o HUD acima do object
+  //const offsetY = height * Math.sin(Math.PI / 6);
 
-  // Aplica um offset vertical baseado na altura do token para posicionar o HUD acima do token
-  const offsetY = height * Math.sin(Math.PI / 6);
-
+  
+  if (object instanceof Token) {
+    const topCenter = calculateIsometricPosition(x + (width / 2), y);
+    const offsetY = height * Math.sin(Math.PI / 6);
+    // Ajusta a posição do HUD
+    html.css({
+      left: `${topCenter.x + (height * 0.3)}px`,
+      top: `${topCenter.y - offsetY + (width * 1.33)}px`,
+      transform: 'translate(-50%, -100%)' // Centraliza horizontalmente e posiciona acima do token
+    });
+  }
+  else if (object instanceof Tile) {
+    const topCenter = calculateIsometricPosition(x, y);
+    const offsetY = height * Math.sin(Math.PI / 6);
+    // Ajusta a posição do HUD
+    html.css({
+      left: `${topCenter.x}px`,
+      top: `${topCenter.y}px`,
+      //transform: 'translate(0%, 0%)' // Centraliza horizontalmente e posiciona acima do token
+    });
+  }
+  
+  
   // Ajusta a posição do HUD
+  /*
   html.css({
     left: `${topCenter.x + (height * 0.3)}px`,
     top: `${topCenter.y - offsetY + (width * 1.33)}px`,
     transform: 'translate(-50%, -100%)' // Centraliza horizontalmente e posiciona acima do token
   });
+  */
 }
 
 // Hook para ajustar a posição do TokenHUD quando ele é renderizado
 Hooks.on("renderTokenHUD", (hud, html, data) => {
+  const scene = game.scenes.current;
+  const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+
+  // requestAnimationFrame garante que a transformação ocorre dentro do tempo de execução e no tempo correto
+  if (isometricWorldEnabled && isIsometric) {
+    requestAnimationFrame(() => adjustHUDPosition(hud, html));
+  }
+});
+// Hook para ajustar a posição do TileHUD quando ele é renderizado
+Hooks.on("renderTileHUD", (hud, html, data) => {
   const scene = game.scenes.current;
   const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
@@ -455,7 +530,6 @@ Hooks.on("renderApplication", (app, html, data) => {
 // -------- FUNÇÕES TRANSFORMAÇÃO ISOMÉTRICA ---------------------------------------------------------------------------------------
 // Função principal que muda o canvas da cena
 function applyIsometricPerspective(scene, isIsometric) {
-  //console.log("applyIsometricPerspective", scene);
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const isoAngle = Math.PI/6;
   const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
@@ -464,15 +538,9 @@ function applyIsometricPerspective(scene, isIsometric) {
     canvas.app.stage.rotation = -isoAngle;
     canvas.app.stage.skew.set(isoAngle, 0);
     adjustAllTokensAndTilesForIsometric();
-    
-    // Aplica transformação no background se estiver habilitado
-    //const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
-    //applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
-    
   } else {
     canvas.app.stage.rotation = 0;
     canvas.app.stage.skew.set(0, 0);
-    //applyBackgroundTransformation(scene, false, false);
   }
 }
 
@@ -505,29 +573,52 @@ function applyIsometricTransformation(object, isIsometric) {
     
     // recupera as características de dimensões do objeto (token/tile)
     let texture = object.texture;
-    let originalWidth = texture.width;
-    let originalHeight = texture.height;
-    let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1;
+    let originalWidth = texture.width;   // art width
+    let originalHeight = texture.height; // art height
+    let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
+    let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
     
+    let elevation = object.document.elevation; // elevation from tokens and tiles
+    let gridSize = canvas.scene.grid.size;
+    let gridDistance = canvas.scene.grid.distance;
+    let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
+    
+    const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
+    if (!ElevationAdjustment) elevation = 0;
+
     // Se o objeto for um Token
     if (object instanceof Token) {
+      // orienta a arte para ser gerada sempre do vertice esquerdo
+      object.mesh.anchor.set(0, 1);
+      
       object.mesh.scale.set(
-        isoScale,
-        isoScale * Math.sqrt(3)
+        scaleX * isoScale,
+        scaleY * isoScale * Math.sqrt(3)
       );
       
       // define o offset manual para centralizar o token
-      const offsetX = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
-      const offsetY = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      let offsetX = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0; // está invertido por causa do renderToken
+      let offsetY = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      
+      // calculo referente ao elevação 
+      offsetX = offsetX + ((elevation * gridSize * Math.sqrt(2)) / gridDistance); //(elevation * gridDistance * Math.sqrt(3))
       const isoOffsets = cartesianToIso(offsetX, offsetY);
       
+      // criar elementos gráficos de sombra e linha
+      updateTokenVisuals(
+        object,
+        elevation,
+        object.document.x + isoOffsets.x,
+        object.document.y + isoOffsets.y
+      );
+
       // posiciona o token
       object.mesh.position.set(
         object.document.x + isoOffsets.x,
         object.document.y + isoOffsets.y
       );
     }
-    
+
     // Se o objeto for um Tile
     else if (object instanceof Tile) {
       // Aplicar a escala mantendo a proporção da arte original
@@ -560,6 +651,12 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
     return;
   }
 
+  //console.log(scene);
+  //console.log(scene); versão melhorada
+  // para afetar o canvas dentro do grid configuration tool
+  // modificar o canvas.stage resolve, mas ele não tem como transformar a arte
+  //const background = scene.stage.background;
+
   const background = canvas.environment.primary.background;
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
@@ -570,8 +667,8 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
     background.skew.set(0, 0);
     background.anchor.set(0.5, 0.5);
     background.transform.scale.set(
-      2* scale,
-      2* scale * Math.sqrt(3)
+      scale,
+      scale * Math.sqrt(3)
     );
     
     // Calculate scene dimensions and padding
@@ -617,3 +714,80 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
     }
   }
 }
+
+
+
+function updateTokenVisuals(token, elevacao, positionX, positionY) {
+  // Primeiro, remova qualquer representação visual existente, se necessário
+  removeTokenVisuals(token);
+
+  // Tente encontrar o container de visual do token
+  let container = canvas.stage.getChildByName(`${token.id}-visuals`);
+
+  // Se o container não existir, cria um novo e adiciona ao canvas
+  if (!container) {
+    container = new PIXI.Container();
+    container.name = `${token.id}-visuals`;
+    container.interactive = false; // Desativar interatividade para o container
+    container.interactiveChildren = false; // Garantir que filhos não sejam interativos
+    canvas.stage.addChild(container);
+  } else {
+    // Se o container já existe, limpa qualquer elemento existente para evitar duplicação
+    container.removeChildren();
+  }
+
+  if (elevacao > 0) {
+    // Criar uma sombra circular no chão
+    const shadow = new PIXI.Graphics();
+    shadow.beginFill(0x000000, 0.3); // Sombra preta com 30% de opacidade
+    shadow.drawCircle(0, 0, canvas.grid.size / 2); // Tamanho da sombra baseado no grid
+    shadow.endFill();
+    shadow.position.set(token.x + canvas.grid.size / 2, token.y + canvas.grid.size / 2); // Centralizar na célula do token
+    container.addChild(shadow);
+
+    // Criar uma linha conectando o chão ao token
+    const line = new PIXI.Graphics();
+    line.lineStyle(2, 0xff0000, 0.5); // Linha vermelha com espessura 2
+    line.moveTo(
+      token.x + canvas.grid.size / 2,
+      token.y + canvas.grid.size / 2
+    ).lineTo(
+      positionX,
+      positionY + canvas.grid.size / 2
+    );
+    container.addChild(line);
+    /*
+    line.moveTo(
+      positionX, //token.x + canvas.grid.size / 2,
+      positionY  //token.y + canvas.grid.size / 2
+    );
+    line.lineTo(
+      origPositionX, //token.x + canvas.grid.size / 2,
+      origPositionY  //token.y + canvas.grid.size / 2 - (elevacao * canvas.grid.size * (1 / 2))
+    );
+    container.addChild(line);
+    */
+  }
+}
+
+
+/**
+ * Remove as representações visuais (sombra e linha) de um token.
+ * @param {Token} token - O token cujas representações visuais devem ser removidas.
+ */
+function removeTokenVisuals(token) {
+  const shadow = canvas.stage.getChildByName(`${token.id}-shadow`);
+  if (shadow) {
+    canvas.stage.removeChild(shadow);
+  }
+
+  const line = canvas.stage.getChildByName(`${token.id}-line`);
+  if (line) {
+    canvas.stage.removeChild(line);
+  }
+}
+
+// Hook para quando um token precisa ser redesenhado
+Hooks.on("deleteToken", (token) => {
+  updateTokenVisuals(token);
+});

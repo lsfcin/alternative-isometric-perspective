@@ -12,8 +12,18 @@ Hooks.once("init", function() {
     config: true,    // false if you dont want it to show in module config
     type: Boolean,   // You want the primitive class, e.g. Number, not the name of the class as a string
     default: true, 
-    onChange: settings => window.location.reload()
-    //requiresReload: true, // true if you want to prompt the user to reload
+    requiresReload: true // true if you want to prompt the user to reload
+    //onChange: settings => window.location.reload() // recarrega automaticamente
+  });
+
+  game.settings.register(MODULE_ID, 'enableHeightAdjustment', {
+    name: 'Enable Height Adjustment',
+    hint: 'Toggle whether tokens adjust their position based on their height',
+    scope: 'world',
+    config: true,
+    default: false,
+    type: Boolean,
+    requiresReload: true
   });
 
   game.settings.register(MODULE_ID, 'debug', {
@@ -23,6 +33,7 @@ Hooks.once("init", function() {
     config: true,
     default: false,
     type: Boolean,
-    onChange: settings => window.location.reload()
+    requiresReload: true
+    //onChange: settings => window.location.reload()
   });
 });
