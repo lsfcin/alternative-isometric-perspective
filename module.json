@@ -5,7 +5,7 @@
   "esmodules": [
     "scripts/isoCanvas.js"
   ],
-  "version": "0.0.3",
+  "version": "0.0.5",
   "compatibility": {
     "minimum": "11",
     "verified": "12"

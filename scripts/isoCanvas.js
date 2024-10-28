@@ -20,8 +20,18 @@ Hooks.once("init", function() {
     config: true,    // false if you dont want it to show in module config
     type: Boolean,   // You want the primitive class, e.g. Number, not the name of the class as a string
     default: true, 
-    onChange: settings => window.location.reload()
-    //requiresReload: true, // true if you want to prompt the user to reload
+    requiresReload: true // true if you want to prompt the user to reload
+    //onChange: settings => window.location.reload() // recarrega automaticamente
+  });
+
+  game.settings.register(MODULE_ID, 'enableHeightAdjustment', {
+    name: 'Enable Height Adjustment',
+    hint: 'Toggle whether tokens adjust their position based on their height',
+    scope: 'world',
+    config: true,
+    default: false,
+    type: Boolean,
+    requiresReload: true
   });
 
   game.settings.register(MODULE_ID, 'debug', {
@@ -31,9 +41,9 @@ Hooks.once("init", function() {
     config: true,
     default: false,
     type: Boolean,
-    onChange: settings => window.location.reload()
+    requiresReload: true
+    //onChange: settings => window.location.reload()
   });
-
 });
 
 // -------- RENDER TEMPLATES -------------------------------------------------------------------------------------------------------
@@ -567,8 +577,15 @@ function applyIsometricTransformation(object, isIsometric) {
     let originalHeight = texture.height; // art height
     let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
     let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
-    let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1;
     
+    let elevation = object.document.elevation; // elevation from tokens and tiles
+    let gridSize = canvas.scene.grid.size;
+    let gridDistance = canvas.scene.grid.distance;
+    let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
+    
+    const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
+    if (!ElevationAdjustment) elevation = 0;
+
     // Se o objeto for um Token
     if (object instanceof Token) {
       // orienta a arte para ser gerada sempre do vertice esquerdo
@@ -580,10 +597,21 @@ function applyIsometricTransformation(object, isIsometric) {
       );
       
       // define o offset manual para centralizar o token
-      const offsetX = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
-      const offsetY = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      let offsetX = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0; // está invertido por causa do renderToken
+      let offsetY = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      
+      // calculo referente ao elevação 
+      offsetX = offsetX + ((elevation * gridSize * Math.sqrt(2)) / gridDistance); //(elevation * gridDistance * Math.sqrt(3))
       const isoOffsets = cartesianToIso(offsetX, offsetY);
       
+      // criar elementos gráficos de sombra e linha
+      updateTokenVisuals(
+        object,
+        elevation,
+        object.document.x + isoOffsets.x,
+        object.document.y + isoOffsets.y
+      );
+
       // posiciona o token
       object.mesh.position.set(
         object.document.x + isoOffsets.x,
@@ -686,3 +714,80 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
     }
   }
 }
+
+
+
+function updateTokenVisuals(token, elevacao, positionX, positionY) {
+  // Primeiro, remova qualquer representação visual existente, se necessário
+  removeTokenVisuals(token);
+
+  // Tente encontrar o container de visual do token
+  let container = canvas.stage.getChildByName(`${token.id}-visuals`);
+
+  // Se o container não existir, cria um novo e adiciona ao canvas
+  if (!container) {
+    container = new PIXI.Container();
+    container.name = `${token.id}-visuals`;
+    container.interactive = false; // Desativar interatividade para o container
+    container.interactiveChildren = false; // Garantir que filhos não sejam interativos
+    canvas.stage.addChild(container);
+  } else {
+    // Se o container já existe, limpa qualquer elemento existente para evitar duplicação
+    container.removeChildren();
+  }
+
+  if (elevacao > 0) {
+    // Criar uma sombra circular no chão
+    const shadow = new PIXI.Graphics();
+    shadow.beginFill(0x000000, 0.3); // Sombra preta com 30% de opacidade
+    shadow.drawCircle(0, 0, canvas.grid.size / 2); // Tamanho da sombra baseado no grid
+    shadow.endFill();
+    shadow.position.set(token.x + canvas.grid.size / 2, token.y + canvas.grid.size / 2); // Centralizar na célula do token
+    container.addChild(shadow);
+
+    // Criar uma linha conectando o chão ao token
+    const line = new PIXI.Graphics();
+    line.lineStyle(2, 0xff0000, 0.5); // Linha vermelha com espessura 2
+    line.moveTo(
+      token.x + canvas.grid.size / 2,
+      token.y + canvas.grid.size / 2
+    ).lineTo(
+      positionX,
+      positionY + canvas.grid.size / 2
+    );
+    container.addChild(line);
+    /*
+    line.moveTo(
+      positionX, //token.x + canvas.grid.size / 2,
+      positionY  //token.y + canvas.grid.size / 2
+    );
+    line.lineTo(
+      origPositionX, //token.x + canvas.grid.size / 2,
+      origPositionY  //token.y + canvas.grid.size / 2 - (elevacao * canvas.grid.size * (1 / 2))
+    );
+    container.addChild(line);
+    */
+  }
+}
+
+
+/**
+ * Remove as representações visuais (sombra e linha) de um token.
+ * @param {Token} token - O token cujas representações visuais devem ser removidas.
+ */
+function removeTokenVisuals(token) {
+  const shadow = canvas.stage.getChildByName(`${token.id}-shadow`);
+  if (shadow) {
+    canvas.stage.removeChild(shadow);
+  }
+
+  const line = canvas.stage.getChildByName(`${token.id}-line`);
+  if (line) {
+    canvas.stage.removeChild(line);
+  }
+}
+
+// Hook para quando um token precisa ser redesenhado
+Hooks.on("deleteToken", (token) => {
+  updateTokenVisuals(token);
+});
