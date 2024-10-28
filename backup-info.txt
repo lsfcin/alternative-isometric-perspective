@@ -25,3 +25,13 @@
   "manifest": "https://raw.githubusercontent.com/marceloabner/isometric-perspective/refs/heads/main/module.json",
   "download": "https://github.com/marceloabner/isometric-perspective/archive/refs/heads/main"
 }
+
+// <!-- template DISABLE ISO ART-->
+<div class="form-group">
+  <label>Disable Isometric Art</label>
+  <div class="form-fields">
+    <input type="checkbox" name="flags.isometric-perspective.reverseTransform" 
+         {{#if reverseTransform}}checked{{/if}} />
+  </div>
+  <p class="notes">If enabled, adjusts the art to appear normal in isometric view. If disabled, the art will follow the canvas transformation.</p>
+</div>

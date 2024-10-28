@@ -342,13 +342,16 @@ Hooks.on("refreshToken", (token) => {
 // Hook para definir flags padrão antes da criação do Tile
 Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
   // Define a flag 'scale' com valor padrão 1
-  createData.flags[MODULE_ID] = createData.flags[MODULE_ID] || {};
-  createData.flags[MODULE_ID].scale = 1;
+  setProperty(createData, `flags.${MODULE_ID}.scale`, 1);
+
+  //errado também
+  //tileDocument.setFlag(MODULE_ID, "scale", 1);
 });
-/* versão antiga do chatgpt
+/* versão nova mas errada
 Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
   // Define a flag 'scale' com valor padrão 1
-  setProperty(createData, `flags.${MODULE_ID}.scale`, 1);
+  createData.flags[MODULE_ID] = createData.flags[MODULE_ID] || {};
+  createData.flags[MODULE_ID].scale = 1;
 });
 */
 
@@ -558,6 +561,7 @@ function applyTokenTransformation(token, isIsometric) {
 // Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
 function applyIsometricTransformation(object, isIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+  //let reverseTransform = object.document.getFlag(MODULE_ID, "reverseTransform") ?? false;
   
   if (!object.mesh) {
     if (game.settings.get(MODULE_ID, "debug")) {
@@ -566,17 +570,26 @@ function applyIsometricTransformation(object, isIsometric) {
     return;
   }
 
-  if (isometricWorldEnabled && isIsometric) {
+  if (isometricWorldEnabled && isIsometric) { // && !reverseTransform
     // desfaz rotação e deformação
     object.mesh.rotation = Math.PI/4;
     object.mesh.skew.set(0, 0);
-    
+      
     // recupera as características de dimensões do objeto (token/tile)
     let texture = object.texture;
+    let tileScale = object.document.texture;
+    let tileHeight = object.height;
+    let tileWidth = object.width;
     let originalWidth = texture.width;   // art width
     let originalHeight = texture.height; // art height
+    let ratio = originalWidth / originalHeight;
     let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
     let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
+
+    console.log("tileScale", tileScale.scaleX, tileScale.scaleY,
+                "\noriginalWidth, originalHeight",originalWidth, originalHeight,
+                "\nscaleX, scaleY", scaleX, scaleY,
+                "\ntileHeight, tileWidth", tileHeight, tileWidth);
     
     let elevation = object.document.elevation; // elevation from tokens and tiles
     let gridSize = canvas.scene.grid.size;
@@ -584,23 +597,22 @@ function applyIsometricTransformation(object, isIsometric) {
     let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
     
     const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
-    if (!ElevationAdjustment) elevation = 0;
-
+    if (!ElevationAdjustment) elevation = 0;    
+    
     // Se o objeto for um Token
     if (object instanceof Token) {
       // orienta a arte para ser gerada sempre do vertice esquerdo
       object.mesh.anchor.set(0, 1);
-      
       object.mesh.scale.set(
         scaleX * isoScale,
         scaleY * isoScale * Math.sqrt(3)
       );
       
       // define o offset manual para centralizar o token
-      let offsetX = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0; // está invertido por causa do renderToken
-      let offsetY = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
       
-      // calculo referente ao elevação 
+      // calculo referente a elevação 
       offsetX = offsetX + ((elevation * gridSize * Math.sqrt(2)) / gridDistance); //(elevation * gridDistance * Math.sqrt(3))
       const isoOffsets = cartesianToIso(offsetX, offsetY);
       
@@ -617,28 +629,43 @@ function applyIsometricTransformation(object, isIsometric) {
         object.document.x + isoOffsets.x,
         object.document.y + isoOffsets.y
       );
+
+
+
+
+
     }
 
     // Se o objeto for um Tile
     else if (object instanceof Tile) {
       // Aplicar a escala mantendo a proporção da arte original
       object.mesh.scale.set(
-        isoScale,
-        isoScale * Math.sqrt(3)
+        (scaleX / originalWidth) * isoScale,
+        (scaleY / originalHeight) * isoScale * Math.sqrt(3)
       );
+      
+      // define o offset manual para centralizar o tile
+      let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+      let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
+      let isoOffsets = cartesianToIso(offsetX, offsetY);
       
       // Aplicar a posição base do tile
       object.mesh.position.set(
-        object.document.x + (originalWidth / 2),
-        object.document.y + (originalHeight / 2)
+        object.document.x + (scaleX / 2) + isoOffsets.x,
+        object.document.y + (scaleY / 2) + isoOffsets.y
       );
     }
+  
+  
+  
+  
   } else {
     // Reseta todas as transformações do mesh
     object.mesh.rotation = 0;
     object.mesh.skew.set(0, 0);
     object.mesh.scale.set(1, 1);
     object.mesh.position.set(object.document.x, object.document.y);
+    object.mesh.anchor.set(0, 0);
   }
 }
 
