@@ -9,6 +9,8 @@ O módulo **Isometric Perspective** para Foundry VTT transforma a experiência d
 
 ### Modo de Perspectiva
 
+Estas são algumas das funcionalidade que o módulo possui.
+
 | Função                           | Descrição                                                                                     |
 |----------------------------------|-----------------------------------------------------------------------------------------------|
 | **Mudança de Perspectiva**       | Muda a perspectiva do canvas de top-down para isométrico, com os modos 2D e nativo disponíveis. |
@@ -64,11 +66,3 @@ Contribuições são bem-vindas! Se você deseja melhorar este módulo, sinta-se
 ## Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
-
-## Contato
-
-Para dúvidas ou sugestões, entre em contato com [seu-email@dominio.com](mailto:seu-email@dominio.com).
-
----
-
-**Nota**: Sinta-se à vontade para modificar os links das imagens, adicionar mais badges (como status de build ou cobertura de testes), e ajustar as informações de contato e licença conforme necessário.
