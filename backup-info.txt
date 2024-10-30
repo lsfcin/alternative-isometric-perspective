@@ -8,6 +8,9 @@
     Desativei os requestAnimationFrame para ver se está tudo bem.
 */
 
+
+
+
 //<!-- module.json -->
 {
   "id": "isometric-perspective",
@@ -25,6 +28,8 @@
   "manifest": "https://raw.githubusercontent.com/marceloabner/isometric-perspective/refs/heads/main/module.json",
   "download": "https://github.com/marceloabner/isometric-perspective/archive/refs/heads/main"
 }
+
+
 
 // <!-- template DISABLE ISO ART-->
 <div class="form-group">

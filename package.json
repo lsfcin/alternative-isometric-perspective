@@ -1,13 +1,12 @@
 {
   "name": "isometric-perspective",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "Isometric Module for Foundry VTT v12",
   "dependencies": {
     "archiver": "^5.3.1"
   },
   "scripts": {
-    "build": "node release.js",
-    "release": "npm run build && git add . && git commit -m \"Release v$npm_package_version\" && git tag -a v$npm_package_version -m \"Release v$npm_package_version\" && git push && git push --tags"
+    "build": "node scripts/release.js"
   },
   "keywords": [],
   "author": "",
