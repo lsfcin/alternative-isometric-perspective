@@ -4,7 +4,7 @@
   "description": "Altera a perspectiva do canvas para isometrica.",
   "version": "0.0.5",
   "esmodules": [
-    "scripts/isoCanvas.js"
+    "scripts/main.js"
   ],
   "authors": [
     {

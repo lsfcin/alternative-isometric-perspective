@@ -2,8 +2,20 @@
 import { registerSceneConfig } from './scene.js';
 import { registerTokenConfig } from './token.js';
 import { registerTileConfig } from './tile.js';
-import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
-import { isoToCartesian, cartesianToIso, calculateIsometricVerticalDistance } from './utils.js';
+import { registerHUDConfig } from './hud.js';
+import { applyIsometricPerspective,
+  adjustAllTokensAndTilesForIsometric, 
+  applyTokenTransformation, 
+  applyIsometricTransformation, 
+  applyBackgroundTransformation, 
+  updateTokenVisuals, 
+  removeTokenVisuals 
+} from './transform.js';
+
+import { isoToCartesian,
+  cartesianToIso,
+  calculateIsometricVerticalDistance
+} from './utils.js';
 
 const MODULE_ID = "isometric-perspective";
 export { MODULE_ID };

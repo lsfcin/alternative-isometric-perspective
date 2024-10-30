@@ -1,4 +1,13 @@
-import { applyIsometricPerspective, applyBackgroundTransformation } from './transforms.js';
+import { MODULE_ID } from './main.js';
+import { applyIsometricPerspective,
+  adjustAllTokensAndTilesForIsometric, 
+  applyTokenTransformation, 
+  applyIsometricTransformation, 
+  applyBackgroundTransformation, 
+  updateTokenVisuals, 
+  removeTokenVisuals 
+} from './transform.js';
+
 
 export function registerSceneConfig() {
 

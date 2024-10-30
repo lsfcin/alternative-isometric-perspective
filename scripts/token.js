@@ -1,10 +1,22 @@
-import { applyIsometricPerspective, applyBackgroundTransformation, applyTokenTransformation } from './transforms.js';
+import { MODULE_ID } from './main.js';
+import { applyIsometricPerspective,
+  adjustAllTokensAndTilesForIsometric, 
+  applyTokenTransformation, 
+  applyIsometricTransformation, 
+  applyBackgroundTransformation, 
+  updateTokenVisuals, 
+  removeTokenVisuals 
+} from './transform.js';
+
+import { isoToCartesian,
+  cartesianToIso,
+  calculateIsometricVerticalDistance
+} from './utils.js';
 
 export function registerTokenConfig() {
 
 
-
-Hooks.on("renderTokenConfig", async (app, html, data) => {
+  Hooks.on("renderTokenConfig", async (app, html, data) => {
     // Carrega o template HTML para a nova aba
     const tabHtml = await renderTemplate("modules/isometric-perspective/templates/token-config.html", {
       offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
@@ -36,45 +48,47 @@ Hooks.on("renderTokenConfig", async (app, html, data) => {
       })];
       app._tabs[0].bind(html[0]);
     }
-});
+  });
 
 
 
-// Hook para quando um token é adicionado ao canvas
-Hooks.on("createToken", (tokenDocument) => {
-  const token = canvas.tokens.get(tokenDocument.id);
-  if (!token) return;
-  
-  const scene = token.scene;
-  const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-  applyTokenTransformation(token, isIsometric);
-  //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
-});
-
-
-
-// Mantenha o hook updateToken
-Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
-  const token = canvas.tokens.get(tokenDocument.id);
-  if (!token) return;
-  
-  const scene = token.scene;
-  const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-  
-  if (updateData.flags?.[MODULE_ID] || updateData.x !== undefined || updateData.y !== undefined) {
+  // Hook para quando um token é adicionado ao canvas
+  Hooks.on("createToken", (tokenDocument) => {
+    const token = canvas.tokens.get(tokenDocument.id);
+    if (!token) return;
+    
+    const scene = token.scene;
+    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     applyTokenTransformation(token, isIsometric);
     //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
-  }
-});
-
-// Hook para quando um token precisa ser redesenhado
-Hooks.on("refreshToken", (token) => {
-  const scene = token.scene;
-  const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-  applyTokenTransformation(token, isIsometric);
-});
+  });
 
 
 
+  // Mantenha o hook updateToken
+  Hooks.on("updateToken", (tokenDocument, updateData, options, userId) => {
+    const token = canvas.tokens.get(tokenDocument.id);
+    if (!token) return;
+    
+    const scene = token.scene;
+    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    
+    if (updateData.flags?.[MODULE_ID] || updateData.x !== undefined || updateData.y !== undefined) {
+      applyTokenTransformation(token, isIsometric);
+      //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
+    }
+  });
+
+  // Hook para quando um token precisa ser redesenhado
+  Hooks.on("refreshToken", (token) => {
+    const scene = token.scene;
+    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    applyTokenTransformation(token, isIsometric);
+  });
+
+  // Hook para quando um token precisa ser redesenhado
+  Hooks.on("deleteToken", (token) => {
+    updateTokenVisuals(token);
+  });
 
 }

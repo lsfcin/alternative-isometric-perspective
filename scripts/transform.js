@@ -1,3 +1,9 @@
+import { MODULE_ID } from './main.js';
+import { isoToCartesian,
+  cartesianToIso,
+  calculateIsometricVerticalDistance
+} from './utils.js';
+
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
@@ -23,7 +29,7 @@ export function adjustAllTokensAndTilesForIsometric() {
 }
 
 // Função auxiliar que chama a função de transformação isométrica em um objeto específico da cena (token ou tile)
-function applyTokenTransformation(token, isIsometric) {
+export function applyTokenTransformation(token, isIsometric) {
   applyIsometricTransformation(token, isIsometric);
 }
 
@@ -55,11 +61,8 @@ export function applyIsometricTransformation(object, isIsometric) {
     let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
     let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
 
-    console.log("tileScale", tileScale.scaleX, tileScale.scaleY,
-                "\noriginalWidth, originalHeight",originalWidth, originalHeight,
-                "\nscaleX, scaleY", scaleX, scaleY,
-                "\ntileHeight, tileWidth", tileHeight, tileWidth);
-    
+
+    // elevation info
     let elevation = object.document.elevation; // elevation from tokens and tiles
     let gridSize = canvas.scene.grid.size;
     let gridDistance = canvas.scene.grid.distance;
@@ -67,6 +70,10 @@ export function applyIsometricTransformation(object, isIsometric) {
     
     const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
     if (!ElevationAdjustment) elevation = 0;    
+    
+    
+    
+    
     
     // Se o objeto for um Token
     if (object instanceof Token) {
@@ -98,13 +105,14 @@ export function applyIsometricTransformation(object, isIsometric) {
         object.document.x + isoOffsets.x,
         object.document.y + isoOffsets.y
       );
-
-
-
-
-
     }
 
+    
+    
+    
+    
+    
+    
     // Se o objeto for um Tile
     else if (object instanceof Tile) {
       // Aplicar a escala mantendo a proporção da arte original
@@ -138,8 +146,12 @@ export function applyIsometricTransformation(object, isIsometric) {
   }
 }
 
-// Função para transformar o background da cena -----------------------------------------------------------------------
-function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
+
+
+
+
+// Função para transformar o background da cena
+export function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
   if (!canvas?.primary?.background) {
     if (game.settings.get(MODULE_ID, "debug")) {
       console.warn("Background não encontrado");
@@ -169,7 +181,6 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
     
     // Calculate scene dimensions and padding
     const s = canvas.scene;
-    //console.log(s);
     const padding = s.padding;
     const paddingX = s.width * padding;
     const paddingY = s.height * padding;
@@ -213,7 +224,7 @@ function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
 
 
 
-function updateTokenVisuals(token, elevacao, positionX, positionY) {
+export function updateTokenVisuals(token, elevacao, positionX, positionY) {
   // Primeiro, remova qualquer representação visual existente, se necessário
   removeTokenVisuals(token);
 
@@ -271,7 +282,7 @@ function updateTokenVisuals(token, elevacao, positionX, positionY) {
  * Remove as representações visuais (sombra e linha) de um token.
  * @param {Token} token - O token cujas representações visuais devem ser removidas.
  */
-function removeTokenVisuals(token) {
+export function removeTokenVisuals(token) {
   const shadow = canvas.stage.getChildByName(`${token.id}-shadow`);
   if (shadow) {
     canvas.stage.removeChild(shadow);
@@ -283,7 +294,3 @@ function removeTokenVisuals(token) {
   }
 }
 
-// Hook para quando um token precisa ser redesenhado
-Hooks.on("deleteToken", (token) => {
-  updateTokenVisuals(token);
-});

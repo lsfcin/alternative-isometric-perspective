@@ -1,3 +1,5 @@
+import { MODULE_ID } from './main.js';
+
 // Função auxiliar para converter coordenadas isométricas para cartesianas
 export function isoToCartesian(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos
