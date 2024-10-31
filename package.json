@@ -6,7 +6,7 @@
     "archiver": "^5.3.1"
   },
   "scripts": {
-    "build": "node scripts/release.js"
+    "build": "node release.js"
   },
   "keywords": [],
   "author": "",
