@@ -42,4 +42,4 @@ execCommand('git push --tags');
 
 console.log(`\nRelease v${version} iniciada com sucesso!`);
 console.log('O GitHub Actions irá criar automaticamente o release com os arquivos.');
-console.log('Verifique o progresso em: https://github.com/SEU_USUARIO/SEU_REPO/actions');
+console.log('Verifique o progresso em: https://github.com/marceloabner/isometric-perspective/actions');
