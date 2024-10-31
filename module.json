@@ -2,7 +2,7 @@
   "title": "Isometric Perspective",
   "id": "isometric-perspective",
   "description": "Altera a perspectiva do canvas para isometrica.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "esmodules": [
     "scripts/main.js"
   ],
