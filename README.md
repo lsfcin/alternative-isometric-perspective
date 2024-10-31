@@ -1,6 +1,6 @@
 # Isometric Perspective
 
-![Isometric Perspective Badge](https://img.shields.io/badge/version-0.0.5-blue)
+![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2F[YOUR_USERNAME]%2F[YOUR_REPO]%2Fmaster%2Fsrc%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange)
 ![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v11+-green)
 
 O módulo **Isometric Perspective** para Foundry VTT transforma a experiência de jogo ao permitir uma visualização isométrica do seu mapa, proporcionando uma nova dimensão de interação e visualização para os jogadores. Este módulo é ideal para campanhas que utilizam mapas isométricos, oferecendo uma série de funcionalidades para personalização e ajuste.
