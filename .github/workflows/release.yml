@@ -73,9 +73,9 @@ jobs:
 
 
       # Update the GitHub release with the manifest and module archive files.
-      - name: Update Release With Files
+      - name: Create Release
         id: create_version_release
-        uses: ncipollo/release-action@v1
+        uses: ncipollo/release-action@v1.14.0
         with:
           allowUpdates: true
           name: ${{ github.event.release.name }}
