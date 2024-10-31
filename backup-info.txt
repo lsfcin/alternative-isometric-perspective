@@ -1,3 +1,55 @@
+Eu quero que você me faça um tutorial de como lançar uma tag e um release novo do meu modulo do foundry vtt no github usando comandos do vscode. Eu tenho a listagem de arquivos da minha pasta principal abaixo, mas eu preciso que durante o processo, um arquivo zip com o nome do meu módulo seja criado contendo somente uma listagem de arquivos específica. Eu gostaria de usar o github actions para automatizar o processo de criação do arquivo zip,  criação da tag, criação do release, e que tudo fosse possível de realizar enviando somente alguns comandos no vscode, que é o ambiente de desenvolvimento que eu uso. Se possível, para facilitar o entendimento do código, por favor use o arquivo .gitignore no processo.
+
+Nome do meu módulo: isometric-perspective
+
+Pastas e arquivos da raiz do módulo
+.github/
+.vscode/
+Backup/
+node_modules/
+scripts/
+templates/
+.gitignore
+backup-info.txt
+module.json
+package.json
+package-lock.json
+README.md
+release.js
+
+
+Pasta e arquivos de dentro da pasta scripts
+old_versions/
+hud.js
+isoCanvas.js
+main.js
+release.js
+scene.js
+tile.js
+token.js
+transform.js
+utils.js
+
+
+Pasta e arquivos necessários para fazer o arquivo isometric-perspective.zip
+scripts/
+templates/
+module.json
+
+scripts/hud.js
+scripts/isoCanvas.js
+scripts/main.js
+scripts/scene.js
+scripts/tile.js
+scripts/token.js
+scripts/transform.js
+scripts/utils.js
+
+templates/scene-config.html
+templates/tile-config.html
+templates/token-config.html
+
+
 /*
   To-Do:
     [DONE] Ajeitar o TileHUD que tá maluco
