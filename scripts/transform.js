@@ -45,6 +45,8 @@ export function applyIsometricTransformation(object, isIsometric) {
     return;
   }
 
+
+
   if (isometricWorldEnabled && isIsometric) { // && !reverseTransform
     // desfaz rotação e deformação
     object.mesh.rotation = Math.PI/4;
@@ -60,7 +62,6 @@ export function applyIsometricTransformation(object, isIsometric) {
     let ratio = originalWidth / originalHeight;
     let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
     let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
-
 
     // elevation info
     let elevation = object.document.elevation; // elevation from tokens and tiles

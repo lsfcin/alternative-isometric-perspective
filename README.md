@@ -1,68 +1,68 @@
 # Isometric Perspective
 
-![Foundry Core Compatible Version](https://img.shields.io/badge/dynamic/json.svg?url=https%3A%2F%2Fraw.githubusercontent.com%2F[marceloabner]%2F[isometric-perspective]%2Fmaster%2Fsrc%2Fmodule.json&label=Foundry%20Version&query=$.compatibleCoreVersion&colorB=orange)
-![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v11+-green)
+![Repository License](https://img.shields.io/github/license/marceloabner/isometric-perspective)
+![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green)
 
-O módulo **Isometric Perspective** para Foundry VTT transforma a experiência de jogo ao permitir uma visualização isométrica do seu mapa, proporcionando uma nova dimensão de interação e visualização para os jogadores. Este módulo é ideal para campanhas que utilizam mapas isométricos, oferecendo uma série de funcionalidades para personalização e ajuste.
+The **Isometric Perspective** module for Foundry VTT enhances the gameplay experience by enabling an isometric view of your map, offering players a new dimension of interaction and visualization. This module is ideal for campaigns using isometric maps, providing a range of features for customization and adjustment.
 
-## Funcionalidades
+## Features
 
-### Modo de Perspectiva
+### Perspective Mode
 
-Estas são algumas das funcionalidade que o módulo possui.
+Here are some of the features the module offers.
 
-| Função                           | Descrição                                                                                     |
+| Feature                          | Description                                                                                     |
 |----------------------------------|-----------------------------------------------------------------------------------------------|
-| **Mudança de Perspectiva**       | Muda a perspectiva do canvas de top-down para isométrico, com os modos 2D e nativo disponíveis. |
-| **Mapa 2D em Projeção Isométrica** | Apresenta os elementos do jogo em um formato 2D isométrico.                                  |
-| **Mapa Isométrico Nativo**      | Utiliza mapas isométricos nativos para uma visualização mais imersiva.                      |
-| **Ajuste de Escala**            | Permite ajustar a escala do mapa isométrico nativo, oferecendo flexibilidade na visualização.|
+| **Perspective Shift**            | Changes the canvas perspective from top-down to isometric, with both 2D and native modes available. |
+| **2D Isometric Projection**      | Presents game elements in a 2D isometric format.                                              |
+| **Native Isometric Map**         | Uses native isometric maps for a more immersive view.                                         |
+| **Scale Adjustment**             | Allows adjusting the scale of the native isometric map, providing flexibility in viewing.      |
 
-### Ajustes de Token
+### Token Adjustments
 
-| Função                          | Descrição                                                                                     |
-|---------------------------------|-----------------------------------------------------------------------------------------------|
-| **Posição da Arte do Token**    | Ajusta a posição da arte do token com base na elevação, criando uma sensação de profundidade. |
-| **Deslocamento da Arte do Token**| Ajusta o deslocamento da arte do token em relação ao grid.                                   |
-| **Escala da Arte do Token**     | Facilita o ajuste de escala da arte para cada token, melhorando a personalização.            |
-| **Aumento de Tamanho do Token** | Aumentar o tamanho do token (1x1 -> 2x2) aumenta automaticamente a arte correspondente.      |
-
-### Ajustes de Tile
-
-| Função                           | Descrição                                                                                     |
+| Feature                          | Description                                                                                     |
 |----------------------------------|-----------------------------------------------------------------------------------------------|
-| **Ajuste Fino de Escala**       | Permite ajuste fino da escala da arte dos tiles nas configurações.                           |
-| **Ajuste Fino de Deslocamento**  | Ajuste do deslocamento da arte do tile, disponível nas configurações.                        |
+| **Token Art Position**           | Adjusts the position of token art based on elevation, creating a sense of depth.              |
+| **Token Art Offset**             | Adjusts the offset of token art relative to the grid.                                         |
+| **Token Art Scale**              | Facilitates scale adjustment of art for each token, enhancing customization.                  |
+| **Token Size Increase**          | Increasing token size (1x1 -> 2x2) automatically scales up the corresponding art.            |
 
-### Integração Nativa
+### Tile Adjustments
 
-- **Compatibilidade**: O módulo utiliza funções nativas do Foundry para templates, desenhos e iluminação, minimizando possíveis incompatibilidades com outros módulos.
+| Feature                          | Description                                                                                     |
+|----------------------------------|-----------------------------------------------------------------------------------------------|
+| **Fine Scale Adjustment**        | Allows fine-tuning of tile art scale in the settings.                                         |
+| **Fine Offset Adjustment**       | Adjusts the offset of tile art, available in settings.                                        |
 
-## Imagens
+### Native Integration
 
-*Adicione imagens ilustrativas abaixo para demonstrar as funcionalidades do módulo e como ele se integra ao Foundry VTT. Por exemplo, capturas de tela mostrando a mudança de perspectiva, ajustes de token e tile podem ser muito úteis para os usuários.*
+- **Compatibility**: The module uses Foundry's native functions for templates, drawings, and lighting, minimizing potential compatibility issues with other modules.
 
-![Exemplo de Mapa Isométrico](link-da-imagem)
+## Images
 
-## To-Do Lista
+*Add illustrative images below to showcase the module's features and how it integrates with Foundry VTT. For example, screenshots showing the perspective shift, token, and tile adjustments may be very helpful for users.*
 
-- [ ] Adicionar offset da arte do Tile.
-- [ ] Adicionar novas perspectivas.
-- [ ] Verificar compatibilidade com outros módulos.
+![Isometric Map Example](link-to-image)
 
-## Bugs Conhecidos
+## To-Do List
 
-- **Posição do TileHud**: A posição do TileHud (menu ao clicar com o botão direito sobre o tile) é alinhada com o vértice da esquerda.
+- [ ] Add Tile Art Offset.
+- [ ] Add new perspectives.
+- [ ] Check compatibility with other modules.
 
-  - **Solução Alternativa**: Na maioria das vezes, executar a macro abaixo é suficiente para corrigir o problema:
+## Known Bugs
+
+- **TileHud Position**: The position of the TileHud (menu on right-clicking a tile) is aligned with the left vertex.
+
+  - **Workaround**: In most cases, running the macro below is enough to resolve the issue:
     ```javascript
     canvas.draw()
     ```
 
-## Contribuição
+## Contribution
 
-Contribuições são bem-vindas! Se você deseja melhorar este módulo, sinta-se à vontade para abrir uma issue ou enviar um pull request.
+Contributions are welcome! If you want to improve this module, feel free to open an issue or submit a pull request.
 
-## Licença
+## License
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+This project is under the MIT license. See the [LICENSE](LICENSE) file for more details.
