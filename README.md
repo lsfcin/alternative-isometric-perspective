@@ -3,7 +3,7 @@
 ![Repository License](https://img.shields.io/github/license/marceloabner/isometric-perspective)
 ![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green)
 
-The **Isometric Perspective** module for Foundry VTT enhances the gameplay experience by enabling an isometric view of your map, offering players a new dimension of interaction and visualization. This module is ideal for campaigns using isometric maps, providing a range of features for customization and adjustment.
+This module changes the map to an isometric perspective, for use with maps and tokens drawn using this perspective.
 
 ## Features
 
@@ -13,7 +13,7 @@ Here are some of the features the module offers.
 
 | Feature                          | Description                                                                                     |
 |----------------------------------|-----------------------------------------------------------------------------------------------|
-| **Perspective Shift**            | Changes the canvas perspective from top-down to isometric, with both 2D and native modes available. |
+| **Dual Perspective**             | Changes the canvas perspective from top-down to isometric, with both 2D and native modes available. |
 | **2D Isometric Projection**      | Presents game elements in a 2D isometric format.                                              |
 | **Native Isometric Map**         | Uses native isometric maps for a more immersive view.                                         |
 | **Scale Adjustment**             | Allows adjusting the scale of the native isometric map, providing flexibility in viewing.      |
