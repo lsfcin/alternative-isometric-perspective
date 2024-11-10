@@ -38,7 +38,6 @@ export function registerTokenConfig() {
     });
   
     // Corrige a inicialização das tabs
-    const tabsElement = html.find('.tabs');
     if (!app._tabs || app._tabs.length === 0) {
       app._tabs = [new Tabs({
         navSelector: ".tabs",
@@ -57,8 +56,8 @@ export function registerTokenConfig() {
     const token = canvas.tokens.get(tokenDocument.id);
     if (!token) return;
     
-    const scene = token.scene;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
+
     applyTokenTransformation(token, isIsometric);
     //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
   });
@@ -70,8 +69,7 @@ export function registerTokenConfig() {
     const token = canvas.tokens.get(tokenDocument.id);
     if (!token) return;
     
-    const scene = token.scene;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
     
     if (updateData.flags?.[MODULE_ID] || updateData.x !== undefined || updateData.y !== undefined) {
       applyTokenTransformation(token, isIsometric);
@@ -79,16 +77,21 @@ export function registerTokenConfig() {
     }
   });
 
+
+
   // Hook para quando um token precisa ser redesenhado
   Hooks.on("refreshToken", (token) => {
-    const scene = token.scene;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
     applyTokenTransformation(token, isIsometric);
   });
+
+
 
   // Hook para quando um token precisa ser redesenhado
   Hooks.on("deleteToken", (token) => {
     updateTokenVisuals(token);
   });
+
+
 
 }

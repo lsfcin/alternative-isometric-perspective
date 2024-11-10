@@ -16,8 +16,6 @@ import { isoToCartesian,
 export function registerTileConfig() {
 
 
-
-
   Hooks.on("renderTileConfig", async (app, html, data) => {
     // Carrega o template HTML para a nova aba
     const tabHtml = await renderTemplate("modules/isometric-perspective/templates/tile-config.html", {
@@ -54,6 +52,7 @@ export function registerTileConfig() {
 
   // Hook para definir flags padrão antes da criação do Tile
   Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
+    
     // Define a flag 'scale' com valor padrão 1
     setProperty(createData, `flags.${MODULE_ID}.scale`, 1);
 

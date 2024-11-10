@@ -1,5 +1,6 @@
 import { MODULE_ID } from './main.js';
-import { applyIsometricPerspective,
+import {
+  applyIsometricPerspective,
   adjustAllTokensAndTilesForIsometric, 
   applyTokenTransformation, 
   applyIsometricTransformation, 

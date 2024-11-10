@@ -4,11 +4,12 @@ import { isoToCartesian,
   calculateIsometricVerticalDistance
 } from './utils.js';
 
+
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const isoAngle = Math.PI/6;
-  const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
+  //const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
   
   if (isometricWorldEnabled && isIsometric) {
     canvas.app.stage.rotation = -isoAngle;
@@ -28,10 +29,14 @@ export function adjustAllTokensAndTilesForIsometric() {
   canvas.tiles.placeables.forEach(tile => applyIsometricTransformation(tile, true));
 }
 
+
+
 // Função auxiliar que chama a função de transformação isométrica em um objeto específico da cena (token ou tile)
 export function applyTokenTransformation(token, isIsometric) {
   applyIsometricTransformation(token, isIsometric);
 }
+
+
 
 // Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
 export function applyIsometricTransformation(object, isIsometric) {
@@ -255,7 +260,7 @@ export function updateTokenVisuals(token, elevacao, positionX, positionY) {
 
     // Criar uma linha conectando o chão ao token
     const line = new PIXI.Graphics();
-    line.lineStyle(2, 0xff0000, 0.5); // Linha vermelha com espessura 2
+    line.lineStyle(2, 0xff0000, 0.5); // Linha vermelha com espessura 2 e alpha 50%
     line.moveTo(
       token.x + canvas.grid.size / 2,
       token.y + canvas.grid.size / 2
@@ -264,25 +269,11 @@ export function updateTokenVisuals(token, elevacao, positionX, positionY) {
       positionY + canvas.grid.size / 2
     );
     container.addChild(line);
-    /*
-    line.moveTo(
-      positionX, //token.x + canvas.grid.size / 2,
-      positionY  //token.y + canvas.grid.size / 2
-    );
-    line.lineTo(
-      origPositionX, //token.x + canvas.grid.size / 2,
-      origPositionY  //token.y + canvas.grid.size / 2 - (elevacao * canvas.grid.size * (1 / 2))
-    );
-    container.addChild(line);
-    */
   }
 }
 
 
-/**
- * Remove as representações visuais (sombra e linha) de um token.
- * @param {Token} token - O token cujas representações visuais devem ser removidas.
- */
+// Remove as representações visuais (sombra e linha) de um token.
 export function removeTokenVisuals(token) {
   const shadow = canvas.stage.getChildByName(`${token.id}-shadow`);
   if (shadow) {
