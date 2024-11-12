@@ -1,6 +1,6 @@
 # Isometric Perspective
 
-![Isometric Map Example](files\banner.jpg)
+![Isometric Map Example](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/banner.jpg)
 *Token and map art provided by [Epic Isometric.](https://www.patreon.com/c/epicisometric/posts)*
 
 ![Repository License](https://img.shields.io/github/license/marceloabner/isometric-perspective)
