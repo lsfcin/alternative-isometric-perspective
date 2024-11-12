@@ -4,7 +4,6 @@ import { isoToCartesian,
   calculateIsometricVerticalDistance
 } from './utils.js';
 
-
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
@@ -72,6 +71,7 @@ export function applyIsometricTransformation(object, isIsometric) {
     let elevation = object.document.elevation; // elevation from tokens and tiles
     let gridSize = canvas.scene.grid.size;
     let gridDistance = canvas.scene.grid.distance;
+    let gridSizeRatio = gridSize / 100;
     let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
     
     const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
@@ -86,8 +86,8 @@ export function applyIsometricTransformation(object, isIsometric) {
       // orienta a arte para ser gerada sempre do vertice esquerdo
       object.mesh.anchor.set(0, 1);
       object.mesh.scale.set(
-        scaleX * isoScale,
-        scaleY * isoScale * Math.sqrt(3)
+        scaleX * isoScale * gridSizeRatio,
+        scaleY * isoScale * gridSizeRatio * Math.sqrt(3)
       );
       
       // define o offset manual para centralizar o token
@@ -96,20 +96,22 @@ export function applyIsometricTransformation(object, isIsometric) {
       
       // calculo referente a elevação 
       offsetX = offsetX + ((elevation * gridSize * Math.sqrt(2)) / gridDistance); //(elevation * gridDistance * Math.sqrt(3))
+      
+      // distâncias transformadas
       const isoOffsets = cartesianToIso(offsetX, offsetY);
       
       // criar elementos gráficos de sombra e linha
       updateTokenVisuals(
         object,
         elevation,
-        object.document.x + isoOffsets.x,
-        object.document.y + isoOffsets.y
+        object.document.x + (isoOffsets.x * scaleX),
+        object.document.y + (isoOffsets.y * scaleY)
       );
 
       // posiciona o token
       object.mesh.position.set(
-        object.document.x + isoOffsets.x,
-        object.document.y + isoOffsets.y
+        object.document.x + (isoOffsets.x * scaleX),
+        object.document.y + (isoOffsets.y * scaleY)
       );
     }
 
@@ -186,19 +188,19 @@ export function applyBackgroundTransformation(scene, isIsometric, shouldTransfor
     );
     
     // Calculate scene dimensions and padding
-    const s = canvas.scene;
-    const padding = s.padding;
-    const paddingX = s.width * padding;
-    const paddingY = s.height * padding;
+    const isoScene = canvas.scene;
+    const padding = isoScene.padding;
+    const paddingX = isoScene.width * padding;
+    const paddingY = isoScene.height * padding;
       
     // Account for background offset settings
-    const offsetX = s.background.offsetX || 0;
-    const offsetY = s.background.offsetY || 0;
+    const offsetX = isoScene.background.offsetX || 0;
+    const offsetY = isoScene.background.offsetY || 0;
     
     // Set position considering padding and offset
     background.position.set(
-      (s.width / 2) + paddingX + offsetX,
-      (s.height / 2) + paddingY + offsetY
+      (isoScene.width / 2) + paddingX + offsetX,
+      (isoScene.height / 2) + paddingY + offsetY
     );
     
     // Handle foreground if it exists
@@ -253,20 +255,22 @@ export function updateTokenVisuals(token, elevacao, positionX, positionY) {
     // Criar uma sombra circular no chão
     const shadow = new PIXI.Graphics();
     shadow.beginFill(0x000000, 0.3); // Sombra preta com 30% de opacidade
-    shadow.drawCircle(0, 0, canvas.grid.size / 2); // Tamanho da sombra baseado no grid
+    shadow.drawCircle(0, 0, (canvas.grid.size/2) * (token.h/canvas.grid.size)); // Tamanho da sombra baseado no grid
     shadow.endFill();
-    shadow.position.set(token.x + canvas.grid.size / 2, token.y + canvas.grid.size / 2); // Centralizar na célula do token
+    shadow.position.set(
+      token.x + token.h / 2, 
+      token.y + token.h / 2); // Centralizar na célula do token
     container.addChild(shadow);
 
     // Criar uma linha conectando o chão ao token
     const line = new PIXI.Graphics();
     line.lineStyle(2, 0xff0000, 0.5); // Linha vermelha com espessura 2 e alpha 50%
     line.moveTo(
-      token.x + canvas.grid.size / 2,
-      token.y + canvas.grid.size / 2
+      token.x + token.h / 2,
+      token.y + token.h / 2
     ).lineTo(
       positionX,
-      positionY + canvas.grid.size / 2
+      positionY + token.h / 2
     );
     container.addChild(line);
   }

@@ -1,63 +1,58 @@
 # Isometric Perspective
 
+![Isometric Map Example](files\banner.jpg)
+*Token and map art provided by [Epic Isometric.](https://www.patreon.com/c/epicisometric/posts)*
+
 ![Repository License](https://img.shields.io/github/license/marceloabner/isometric-perspective)
 ![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green)
 
-This module changes the map to an isometric perspective, for use with maps and tokens drawn using this perspective.
+This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
 
 ## Features
 
-### Perspective Mode
-
 Here are some of the features the module offers.
 
-| Feature                          | Description                                                                                     |
-|----------------------------------|-----------------------------------------------------------------------------------------------|
-| **Dual Perspective**             | Changes the canvas perspective from top-down to isometric, with both 2D and native modes available. |
-| **2D Isometric Projection**      | Presents game elements in a 2D isometric format.                                              |
-| **Native Isometric Map**         | Uses native isometric maps for a more immersive view.                                         |
-| **Scale Adjustment**             | Allows adjusting the scale of the native isometric map, providing flexibility in viewing.      |
+- **Dual Canvas Perspectives:** You can use top-down or isometric maps. In native isometric mode, you can adjust the scale of the map.
+- **Token Sprite Adjustments:** You can fine-tune the position of the token sprite, as well as its scale. Increasing the size of the token automatically increases the size of the sprite.
+- **Tile Sprite Adjustments:** You can also fine-tune the sprite position and scale, making easy to copy and paste multiple tiles.
+- **Token Height Visual Cues:** If a token has any elevation, its sprite will be repositioned to reflect this height and two shadow and line sprites will be created to help identify its position.
 
-### Token Adjustments
-
-| Feature                          | Description                                                                                     |
-|----------------------------------|-----------------------------------------------------------------------------------------------|
-| **Token Art Position**           | Adjusts the position of token art based on elevation, creating a sense of depth.              |
-| **Token Art Offset**             | Adjusts the offset of token art relative to the grid.                                         |
-| **Token Art Scale**              | Facilitates scale adjustment of art for each token, enhancing customization.                  |
-| **Token Size Increase**          | Increasing token size (1x1 -> 2x2) automatically scales up the corresponding art.            |
-
-### Tile Adjustments
-
-| Feature                          | Description                                                                                     |
-|----------------------------------|-----------------------------------------------------------------------------------------------|
-| **Fine Scale Adjustment**        | Allows fine-tuning of tile art scale in the settings.                                         |
-| **Fine Offset Adjustment**       | Adjusts the offset of tile art, available in settings.                                        |
-
-### Native Integration
-
-- **Compatibility**: The module uses Foundry's native functions for templates, drawings, and lighting, minimizing potential compatibility issues with other modules.
+### Compatibility
+The basic operation of this module consists of applying a transformation to the canvas (rotating and tilting) to achieve the isometric perspective, while undoing this transformation in the background art, tokens and tiles. In this way, it preserves compatibility with most of the core functionalities and with modules that do not directly interact with these systems. Native functions of templates, drawings and lighting work normally.
 
 ## Images
 
-*Add illustrative images below to showcase the module's features and how it integrates with Foundry VTT. For example, screenshots showing the perspective shift, token, and tile adjustments may be very helpful for users.*
+*Token and map art provided by [Epic Isometric.](https://www.patreon.com/c/epicisometric/posts)*
 
-![Isometric Map Example](link-to-image)
+![](files\scene-config.jpg)
+*Scene configuration.*
 
-## To-Do List
 
-- [ ] Add Tile Art Offset.
-- [ ] Add new perspectives.
-- [ ] Check compatibility with other modules.
+![](files\token-config.jpg)
+*Token configuration.*
+
+![](files\tile-config.jpg)
+*Tile configuration.*
+
 
 ## Known Bugs
 
-- **TileHud Position**: The position of the TileHud (menu on right-clicking a tile) is aligned with the left vertex.
+- **Scene Grid Configuration**: The canvas background configuration in Scene Settings > Grid > Ruler Tool ( <img src="https://raw.githubusercontent.com/FortAwesome/Font-Awesome/37eff7fa00de26db41183a3ad8ed0e9119fbc44b/svgs/solid/ruler-combined.svg" width="15" height="15"></i> ) does not work.
+  - **Workaround**: The art scale function has been recreated in the Isometric tab, and the offset function can be accessed in the Grid tab.
 
-  - **Workaround**: In most cases, running the macro below is enough to resolve the issue:
+- **TokenHud and TileHud Position**: The position of the TileHud (menu on right-clicking a tile) is aligned with the left vertex, but sometimes will be far away from the token/tile.
+
+  - **Workaround**: In most cases, running the macro below is enough to fix the issue:
     ```javascript
     canvas.draw()
     ```
+
+## To-Do List
+
+- [ ] Change tokens properties (vision) change token position.
+- [ ] Add new perspectives.
+- [ ] Check compatibility with other modules.
+- [ ] Code to handle tiles and walls.
 
 ## Contribution
 
