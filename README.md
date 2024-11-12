@@ -25,13 +25,16 @@ The basic operation of this module consists of applying a transformation to the 
 *Token and map art provided by [Epic Isometric.](https://www.patreon.com/c/epicisometric/posts)*
 
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/scene-config.jpg)
+
 *Scene configuration.*
 
 
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/token-config.jpg)
+
 *Token configuration.*
 
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/tile-config.jpg)
+
 *Tile configuration.*
 
 
