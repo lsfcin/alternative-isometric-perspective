@@ -1,10 +1,11 @@
 # Isometric Perspective
 
 ![Isometric Map Example](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/banner.jpg)
-*Token and map art provided by [Epic Isometric.](https://www.patreon.com/c/epicisometric/posts)*
 
-![Repository License](https://img.shields.io/github/license/marceloabner/isometric-perspective)
-![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green)
+| | |
+|:---|---:|
+![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green) ![Static Badge](https://img.shields.io/badge/license%20-%20MIT-blue) |  [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID) |
+
 
 This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
 
@@ -18,7 +19,7 @@ Here are some of the features the module offers.
 - **Token Height Visual Cues:** If a token has any elevation, its sprite will be repositioned to reflect this height and two shadow and line sprites will be created to help identify its position.
 
 ### Compatibility
-The basic operation of this module consists of applying a transformation to the canvas (rotating and tilting) to achieve the isometric perspective, while undoing this transformation in the background art, tokens and tiles. In this way, it preserves compatibility with most of the core functionalities and with modules that do not directly interact with these systems. Native functions of templates, drawings and lighting work normally.
+The basic operation of this module consists of applying a transformation to the canvas (rotate and skew) to achieve the isometric perspective, while undoing this transformation in art/sprite of background, tokens and tiles. In this way, it preserves compatibility with most of the core functionalities and with modules that do not directly interact with these systems. Native functions of templates, drawings and lighting work normally.
 
 ## Images
 
@@ -66,3 +67,18 @@ Contributions are welcome! If you want to improve this module, feel free to open
 ## License
 
 This project is under the MIT license. See the [LICENSE](LICENSE) file for more details.
+
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: -10px;
+}
+table, th, td {
+   border: none;
+}
+blockquote {
+    border-left: none;
+    padding-left: 0px;
+}
+</style>
