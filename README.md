@@ -2,6 +2,21 @@
 
 ![Isometric Map Example](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/banner.jpg)
 
+<style>
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: -10px;
+}
+table, th, td {
+   border: none;
+}
+blockquote {
+    border-left: none;
+    padding-left: 0px;
+}
+</style>
+
 | | |
 |:---|---:|
 ![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green) ![Static Badge](https://img.shields.io/badge/license%20-%20MIT-blue) |  [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID) |
@@ -67,18 +82,3 @@ Contributions are welcome! If you want to improve this module, feel free to open
 ## License
 
 This project is under the MIT license. See the [LICENSE](LICENSE) file for more details.
-
-<style>
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: -10px;
-}
-table, th, td {
-   border: none;
-}
-blockquote {
-    border-left: none;
-    padding-left: 0px;
-}
-</style>
