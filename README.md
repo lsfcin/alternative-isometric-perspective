@@ -2,24 +2,9 @@
 
 ![Isometric Map Example](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/banner.jpg)
 
-<style>
-table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: -10px;
-}
-table, th, td {
-   border: none;
-}
-blockquote {
-    border-left: none;
-    padding-left: 0px;
-}
-</style>
-
-| | |
-|:---|---:|
-![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green) ![Static Badge](https://img.shields.io/badge/license%20-%20MIT-blue) |  [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID) |
+![Foundry VTT](https://img.shields.io/badge/Foundry%20VTT-v12+-green)
+![Static Badge](https://img.shields.io/badge/license%20-%20MIT-blue) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID)
 
 
 This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
