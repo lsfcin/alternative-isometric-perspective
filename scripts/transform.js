@@ -70,8 +70,8 @@ export function applyIsometricTransformation(object, isIsometric) {
     // elevation info
     let elevation = object.document.elevation; // elevation from tokens and tiles
     let gridSize = canvas.scene.grid.size;
-    let gridDistance = canvas.scene.grid.distance;
     let gridSizeRatio = gridSize / 100;
+    let gridDistance = canvas.scene.grid.distance;
     let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
     
     const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
@@ -95,7 +95,10 @@ export function applyIsometricTransformation(object, isIsometric) {
       let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
       
       // calculo referente a elevação 
-      offsetX = offsetX + ((elevation * gridSize * Math.sqrt(2)) / gridDistance); //(elevation * gridDistance * Math.sqrt(3))
+      //offsetX = offsetX + (elevation * gridSize * Math.sqrt(2) * (1/gridDistance) * (1/scaleX)); //(elevation * gridDistance * Math.sqrt(3))
+      offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);
+      offsetX *= gridSizeRatio;
+      offsetY *= gridSizeRatio;
       
       // distâncias transformadas
       const isoOffsets = cartesianToIso(offsetX, offsetY);
@@ -104,8 +107,8 @@ export function applyIsometricTransformation(object, isIsometric) {
       updateTokenVisuals(
         object,
         elevation,
-        object.document.x + (isoOffsets.x * scaleX),
-        object.document.y + (isoOffsets.y * scaleY)
+        gridSize,
+        gridDistance
       );
 
       // posiciona o token
@@ -123,6 +126,7 @@ export function applyIsometricTransformation(object, isIsometric) {
     
     // Se o objeto for um Tile
     else if (object instanceof Tile) {
+      //const sceneScale = canvas.scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
       // Aplicar a escala mantendo a proporção da arte original
       object.mesh.scale.set(
         (scaleX / originalWidth) * isoScale,
@@ -231,62 +235,85 @@ export function applyBackgroundTransformation(scene, isIsometric, shouldTransfor
 }
 
 
+// ----------------- Elevation -----------------
 
-export function updateTokenVisuals(token, elevacao, positionX, positionY) {
-  // Primeiro, remova qualquer representação visual existente, se necessário
+// Manter registro de todos os containers visuais criados
+const visualContainers = new Set();
+
+// Função para limpar todos os visuais
+export function clearAllVisuals() {
+  for (const containerId of visualContainers) {
+    const container = canvas.stage.getChildByName(containerId);
+    if (container) {
+      canvas.stage.removeChild(container);
+    }
+  }
+  visualContainers.clear();
+}
+
+// Função para verificar se um token existe na cena atual
+function isTokenInCurrentScene(tokenId) {
+  return canvas.tokens.placeables.some(t => t.id === tokenId);
+}
+
+export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
+  // Primeiro, remova qualquer representação visual existente
   removeTokenVisuals(token);
 
-  // Tente encontrar o container de visual do token
-  let container = canvas.stage.getChildByName(`${token.id}-visuals`);
+  // Se não há elevação, não cria visuais
+  if (elevacao <= 0) return;
 
-  // Se o container não existir, cria um novo e adiciona ao canvas
-  if (!container) {
-    container = new PIXI.Container();
-    container.name = `${token.id}-visuals`;
-    container.interactive = false; // Desativar interatividade para o container
-    container.interactiveChildren = false; // Garantir que filhos não sejam interativos
-    canvas.stage.addChild(container);
-  } else {
-    // Se o container já existe, limpa qualquer elemento existente para evitar duplicação
-    container.removeChildren();
-  }
+  // Cria um novo container
+  const container = new PIXI.Container();
+  container.name = `${token.id}-visuals`;
+  container.interactive = false;
+  container.interactiveChildren = false;
+  
+  // Registrar o container
+  visualContainers.add(container.name);
 
-  if (elevacao > 0) {
-    // Criar uma sombra circular no chão
-    const shadow = new PIXI.Graphics();
-    shadow.beginFill(0x000000, 0.3); // Sombra preta com 30% de opacidade
-    shadow.drawCircle(0, 0, (canvas.grid.size/2) * (token.h/canvas.grid.size)); // Tamanho da sombra baseado no grid
-    shadow.endFill();
-    shadow.position.set(
-      token.x + token.h / 2, 
-      token.y + token.h / 2); // Centralizar na célula do token
-    container.addChild(shadow);
+  // Criar uma sombra circular no chão
+  const shadow = new PIXI.Graphics();
+  shadow.beginFill(0x000000, 0.3);
+  shadow.drawCircle(0, 0, (canvas.grid.size/2) * (token.h/canvas.grid.size));
+  shadow.endFill();
+  shadow.position.set(
+    token.x + token.h / 2, 
+    token.y + token.h / 2
+  );
+  container.addChild(shadow);
 
-    // Criar uma linha conectando o chão ao token
-    const line = new PIXI.Graphics();
-    line.lineStyle(2, 0xff0000, 0.5); // Linha vermelha com espessura 2 e alpha 50%
-    line.moveTo(
-      token.x + token.h / 2,
-      token.y + token.h / 2
-    ).lineTo(
-      positionX,
-      positionY + token.h / 2
-    );
-    container.addChild(line);
-  }
+  // Criar uma linha conectando o chão ao token
+  const line = new PIXI.Graphics();
+  line.lineStyle(2, 0xff0000, 0.5);
+  line.moveTo(              // vai para o centro do token
+    token.x + token.h / 2,
+    token.y + token.h / 2
+  ).lineTo(                 // desenha uma linha de onde moveu para a próxima posição
+    //centraliza no token + posiciona no cartesiano diretamente, porque eu preciso somente de uma linha na diagonal
+    (token.x + token.h/2) + (elevacao * (gridSize/gridDistance)),
+    (token.y + token.h/2) - (elevacao * (gridSize/gridDistance))
+  );
+  container.addChild(line);
+
+  // Adicionar o container ao canvas
+  canvas.stage.addChild(container);
 }
 
-
-// Remove as representações visuais (sombra e linha) de um token.
 export function removeTokenVisuals(token) {
-  const shadow = canvas.stage.getChildByName(`${token.id}-shadow`);
-  if (shadow) {
-    canvas.stage.removeChild(shadow);
-  }
-
-  const line = canvas.stage.getChildByName(`${token.id}-line`);
-  if (line) {
-    canvas.stage.removeChild(line);
+  const container = canvas.stage.getChildByName(`${token.id}-visuals`);
+  if (container) {
+    canvas.stage.removeChild(container);
+    visualContainers.delete(container.name);
   }
 }
 
+// Hook para limpar os visuais quando a cena é descarregada
+Hooks.on('canvasReady', () => {
+  clearAllVisuals();
+});
+
+// Hook para atualizar visuais quando tokens são deletados
+Hooks.on('deleteToken', (token) => {
+  removeTokenVisuals(token);
+});
