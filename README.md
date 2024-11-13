@@ -28,7 +28,6 @@ The basic operation of this module consists of applying a transformation to the 
 
 *Scene configuration.*
 
-
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/token-config.jpg)
 
 *Token configuration.*
@@ -37,6 +36,9 @@ The basic operation of this module consists of applying a transformation to the 
 
 *Tile configuration.*
 
+![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/elevation.jpg)
+
+*Elevation previews.*
 
 ## Known Bugs
 
