@@ -36,8 +36,18 @@ Hooks.once("init", function() {
 
   game.settings.register(MODULE_ID, 'enableHeightAdjustment', {
     name: 'Enable Height Adjustment',
-    hint: 'Toggle whether tokens adjust their position based on their height',
-    scope: 'world',
+    hint: 'Toggle whether tokens adjust their position based on their height.',
+    scope: 'client',
+    config: true,
+    default: false,
+    type: Boolean,
+    requiresReload: true
+  });
+
+  game.settings.register(MODULE_ID, 'enableTokenVisuals', {
+    name: 'Enable Token Visuals',
+    hint: 'Displays some visual cues when a token has any elevation value (a round shadow and a red line). Needs "Enable Height Adjustment" set.',
+    scope: 'client',
     config: true,
     default: false,
     type: Boolean,
@@ -46,7 +56,7 @@ Hooks.once("init", function() {
 
   game.settings.register(MODULE_ID, 'debug', {
     name: 'Enable Debug Mode',
-    hint: 'Enables debug prints',
+    hint: 'Enables debug prints.',
     scope: 'client',
     config: true,
     default: false,

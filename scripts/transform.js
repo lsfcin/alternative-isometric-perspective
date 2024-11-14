@@ -275,8 +275,9 @@ export function updateTokenVisuals(token, elevacao, gridSize, gridDistance) {
   // Primeiro, remova qualquer representação visual existente
   removeTokenVisuals(token);
 
-  // Se não há elevação, não cria visuais
-  if (elevacao <= 0) return;
+  // Se não há elevação ou a variável global está desativada, não cria visuais
+  const tokenVisuals = game.settings.get(MODULE_ID, "enableTokenVisuals");
+  if (elevacao <= 0 || !tokenVisuals) return;
 
   // Cria um novo container
   const container = new PIXI.Container();
