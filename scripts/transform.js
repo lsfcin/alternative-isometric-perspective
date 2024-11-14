@@ -73,6 +73,11 @@ export function applyIsometricTransformation(object, isIsometric) {
     let gridSizeRatio = gridSize / 100;
     let gridDistance = canvas.scene.grid.distance;
     let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
+    /**
+     * @param {Código para ser usado se quiser alterar os controles nativos do foundry}
+    let origScaleX = object.document.texture.scaleX;
+    let origScaleY = object.document.texture.scaleY;
+    */
     
     const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
     if (!ElevationAdjustment) elevation = 0;    
@@ -93,7 +98,17 @@ export function applyIsometricTransformation(object, isIsometric) {
       // define o offset manual para centralizar o token
       let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
       let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
-      
+
+      /**
+       * @param {Código para ser usado se quiser alterar os controles nativos do foundry}
+      object.mesh.scale.set(
+        origScaleX * gridSizeRatio,
+        origScaleY * gridSizeRatio * Math.sqrt(3)
+      );
+      let offsetX = object.document.texture.anchorX * 10;
+      let offsetY = object.document.texture.anchorY * 10;
+      */
+     
       // calculo referente a elevação 
       //offsetX = offsetX + (elevation * gridSize * Math.sqrt(2) * (1/gridDistance) * (1/scaleX)); //(elevation * gridDistance * Math.sqrt(3))
       offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);

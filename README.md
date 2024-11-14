@@ -56,10 +56,11 @@ The basic operation of this module consists of applying a transformation to the 
 
 ## To-Do List
 
-- [ ] Change tokens properties (vision) change token position.
 - [ ] Add new perspectives.
 - [ ] Check compatibility with other modules.
 - [ ] Code to handle tiles and walls.
+- [X] Bugfix: Change tokens properties (vision) change token position.
+- [x] Using core foundry controls for token scale and anchor. (Added in the code as alternative, need to see yet if is worth it using)
 
 ## Contribution
 

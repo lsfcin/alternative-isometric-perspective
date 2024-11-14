@@ -49,6 +49,17 @@ export function registerTokenConfig() {
     }
   });
 
+  /**
+   * @param {Código para ser usado se quiser alterar os controles nativos do foundry}
+  Hooks.on('renderTokenConfig', (app, html, data) => {
+    // Encontre o input de escala no HTML da janela de configuração do token
+    const scaleInput = html.find('input[name="scale"]');
+  
+    // Modifique o atributo "step" do input para 0.01
+    scaleInput.attr('step', 0.01);
+  });
+  */
+
 
 
   // Hook para quando um token é adicionado ao canvas
