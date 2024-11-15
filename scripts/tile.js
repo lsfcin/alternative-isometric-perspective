@@ -7,6 +7,7 @@ export function registerTileConfig() {
   Hooks.on("renderTileConfig", async (app, html, data) => {
     // Carrega o template HTML para a nova aba
     const tabHtml = await renderTemplate("modules/isometric-perspective/templates/tile-config.html", {
+      isoDisabled: app.object.getFlag(MODULE_ID, 'isoTileDisabled') ?? 1,
       scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1,
       isFlipped: app.object.getFlag(MODULE_ID, 'tokenFlipped') ?? false,
       offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
@@ -22,7 +23,10 @@ export function registerTileConfig() {
     lastTab.after(tabHtml);
 
     // Inicializa os valores dos controles
+    const isoTileCheckbox = html.find('input[name="flags.isometric-perspective.isoTileDisabled"]');
     const flipCheckbox = html.find('input[name="flags.isometric-perspective.tokenFlipped"]');
+    
+    isoTileCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTileDisabled"));
     flipCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "tokenFlipped"));
 
     // Adiciona listener para atualizar o valor exibido do slider
@@ -33,6 +37,12 @@ export function registerTileConfig() {
     // Handler para o formulário de submit
     html.find('form').on('submit', async (event) => {
       // Se o valor do checkbox é true, atualiza as flags com os novos valores
+      if (isoTileCheckbox.prop("checked")) {
+        await app.object.setFlag(MODULE_ID, "isoTileDisabled", true);
+      } else {
+          await app.object.unsetFlag(MODULE_ID, "isoTileDisabled");
+      }
+
       if (flipCheckbox.prop("checked")) {
           await app.object.setFlag(MODULE_ID, "tokenFlipped", true);
       } else {

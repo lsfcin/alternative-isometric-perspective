@@ -1,5 +1,15 @@
 <!-- Isometric Tile Configuration.html -->
 <div class="tab" data-tab="isometric">
+  <div class="form-group">
+    <label>Disable Isometric Tile</label>
+    <div class="form-fields">
+        <input type="checkbox" name="flags.isometric-perspective.isoTileDisabled" {{#if isoTileDisabled}}checked{{/if}}>
+    </div>
+    <p class="notes">Disable isometric transformation on this tile.</p>
+  </div>
+
+  <hr>
+
   <div class="form-group offset-point">
     <label>Art Offset</label>
     <div class="form-fields">
@@ -32,7 +42,7 @@
     <div class="form-fields">
         <input type="checkbox" name="flags.isometric-perspective.tokenFlipped" {{#if isFlipped}}checked{{/if}}>
     </div>
-    <p class="notes">Flip the tile art horizontally.</p>
+    <p class="notes">Flip the tile art horizontally. Works only with isometric transformation turned on.</p>
   </div>
 
   <style>

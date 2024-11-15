@@ -47,6 +47,10 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   }
 
 
+  // Flip token horizontally, if the flag is active
+  let isoTileDisabled = object.document.getFlag(MODULE_ID, 'isoTileDisabled') ?? 0;
+  let isoTokenDisabled = object.document.getFlag(MODULE_ID, 'isoTokenDisabled') ?? 0;
+  if (isoTileDisabled || isoTokenDisabled) return
 
   if (isometricWorldEnabled && isSceneIsometric) { // && !reverseTransform
     // desfaz rotação e deformação

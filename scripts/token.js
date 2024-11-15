@@ -7,6 +7,7 @@ export function registerTokenConfig() {
   Hooks.on("renderTokenConfig", async (app, html, data) => {
     // Carrega o template HTML para a nova aba
     const tabHtml = await renderTemplate("modules/isometric-perspective/templates/token-config.html", {
+      isoDisabled: app.object.getFlag(MODULE_ID, 'isoTokenDisabled') ?? 1,
       offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
       offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0,
       scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1
@@ -20,11 +21,25 @@ export function registerTokenConfig() {
     const lastTab = html.find('.tab').last();
     lastTab.after(tabHtml);
   
+    // Inicializa os valores dos controles
+    const isoTokenCheckbox = html.find('input[name="flags.isometric-perspective.isoTokenDisabled"]');
+    isoTokenCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTokenDisabled"));
+
     // Adiciona listener para atualizar o valor exibido do slider
     html.find('.scale-slider').on('input', function() {
       html.find('.range-value').text(this.value);
     });
   
+    // Handler para o formulário de submit
+    html.find('form').on('submit', async (event) => {
+      // Se o valor do checkbox é true, atualiza as flags com os novos valores
+      if (isoTokenCheckbox.prop("checked")) {
+        await app.object.setFlag(MODULE_ID, "isoTokenDisabled", true);
+      } else {
+          await app.object.unsetFlag(MODULE_ID, "isoTokenDisabled");
+      }
+    });
+    
     // Corrige a inicialização das tabs
     if (!app._tabs || app._tabs.length === 0) {
       app._tabs = [new Tabs({

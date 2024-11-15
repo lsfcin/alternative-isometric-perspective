@@ -1,5 +1,15 @@
 <!-- Isometric Token Configuration.html -->
 <div class="tab" data-tab="isometric">
+  <div class="form-group">
+    <label>Disable Isometric Token</label>
+    <div class="form-fields">
+        <input type="checkbox" name="flags.isometric-perspective.isoTokenDisabled" {{#if isoTokenDisabled}}checked{{/if}}>
+    </div>
+    <p class="notes">Disable isometric transformation on this token.</p>
+  </div>
+
+  <hr>
+  
   <div class="form-group offset-point">
     <label>Art Offset</label>
     <div class="form-fields">
