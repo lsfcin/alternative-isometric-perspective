@@ -27,6 +27,14 @@
     <p class="notes">Adjust scale of tile art when in isometric perspective (0.01x to 3x).</p>
   </div>
 
+  <div class="form-group">
+    <label>Flip Tile</label>
+    <div class="form-fields">
+        <input type="checkbox" name="flags.isometric-perspective.tokenFlipped" {{#if isFlipped}}checked{{/if}}>
+    </div>
+    <p class="notes">Flip the tile art horizontally.</p>
+  </div>
+
   <style>
     .scale-slider {
       flex: 4;

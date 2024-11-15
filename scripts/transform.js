@@ -139,12 +139,21 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     // Se o objeto for um Tile
     else if (object instanceof Tile) {
       //const sceneScale = canvas.scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
+      
       // Aplicar a escala mantendo a proporção da arte original
       object.mesh.scale.set(
         (scaleX / originalWidth) * isoScale,
         (scaleY / originalHeight) * isoScale * Math.sqrt(3)
       );
       
+      // Flip token horizontally, if the flag is active
+      let scaleFlip = object.document.getFlag(MODULE_ID, 'tokenFlipped') ?? 0;
+      if (scaleFlip) {
+        let meshScaleX = object.mesh.scale.x;
+        let meshScaleY = object.mesh.scale.y;
+        object.mesh.scale.set(-meshScaleX, meshScaleY);
+      }
+
       // define o offset manual para centralizar o tile
       let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
       let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;

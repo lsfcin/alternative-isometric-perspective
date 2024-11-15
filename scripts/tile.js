@@ -7,20 +7,37 @@ export function registerTileConfig() {
   Hooks.on("renderTileConfig", async (app, html, data) => {
     // Carrega o template HTML para a nova aba
     const tabHtml = await renderTemplate("modules/isometric-perspective/templates/tile-config.html", {
-      scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1
+      scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1,
+      isFlipped: app.object.getFlag(MODULE_ID, 'tokenFlipped') ?? false,
+      offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
+      offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0
     });
     
     // Adiciona a nova aba ao menu
     const tabs = html.find('.tabs:not(.secondary-tabs)');
     tabs.append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
-    
+
     // Adiciona o conteúdo da aba após a última aba existente
     const lastTab = html.find('.tab').last();
     lastTab.after(tabHtml);
 
+    // Inicializa os valores dos controles
+    const flipCheckbox = html.find('input[name="flags.isometric-perspective.tokenFlipped"]');
+    flipCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "tokenFlipped"));
+
     // Adiciona listener para atualizar o valor exibido do slider
     html.find('.scale-slider').on('input', function() {
       html.find('.range-value').text(this.value);
+    });
+
+    // Handler para o formulário de submit
+    html.find('form').on('submit', async (event) => {
+      // Se o valor do checkbox é true, atualiza as flags com os novos valores
+      if (flipCheckbox.prop("checked")) {
+          await app.object.setFlag(MODULE_ID, "tokenFlipped", true);
+      } else {
+          await app.object.unsetFlag(MODULE_ID, "tokenFlipped");
+      }
     });
 
     // Corrige a inicialização das tabs
@@ -38,15 +55,22 @@ export function registerTileConfig() {
 
 
 
+  /*
   // Hook para definir flags padrão antes da criação do Tile
   Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
     
     // Define a flag 'scale' com valor padrão 1
     setProperty(createData, `flags.${MODULE_ID}.scale`, 1);
+    
+    const tile = canvas.tiles.get(tileDocument.id);
+    console.log(tileDocument);
+    tileDocument.setFlag(MODULE_ID, 'scale', 1);
 
     //errado também
     //tileDocument.setFlag(MODULE_ID, "scale", 1);
   });
+  */
+
   /* versão nova mas errada
   Hooks.on("preCreateTile", (tileDocument, createData, options, userId) => {
     // Define a flag 'scale' com valor padrão 1
