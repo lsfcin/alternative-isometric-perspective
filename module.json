@@ -2,7 +2,7 @@
   "title": "Isometric Perspective",
   "id": "isometric-perspective",
   "description": "Altera a perspectiva do canvas para isometrica.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "esmodules": [
     "scripts/main.js"
   ],
@@ -17,6 +17,6 @@
     "verified": "12"
   },
   "url": "https://github.com/arlosmolten/isometric-perspective",
-  "manifest": "https://github.com/arlosmolten/isometric-perspective/releases/download/v0.2.0/module.json",
-  "download": "https://github.com/arlosmolten/isometric-perspective/releases/download/v0.2.0/isometric-perspective.zip"
+  "manifest": "https://github.com/arlosmolten/isometric-perspective/releases/download/v0.3.0/module.json",
+  "download": "https://github.com/arlosmolten/isometric-perspective/releases/download/v0.3.0/isometric-perspective.zip"
 }
