@@ -1,17 +1,5 @@
 import { MODULE_ID } from './main.js';
-import { applyIsometricPerspective,
-  adjustAllTokensAndTilesForIsometric, 
-  applyTokenTransformation, 
-  applyIsometricTransformation, 
-  applyBackgroundTransformation, 
-  updateTokenVisuals, 
-  removeTokenVisuals 
-} from './transform.js';
-
-import { isoToCartesian,
-  cartesianToIso,
-  calculateIsometricVerticalDistance
-} from './utils.js';
+import { applyIsometricTransformation } from './transform.js';
 
 export function registerTileConfig() {
 
@@ -74,8 +62,8 @@ export function registerTileConfig() {
     if (!tile) return;
     
     const scene = tile.scene;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-    requestAnimationFrame(() => applyIsometricTransformation(tile, isIsometric));
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    requestAnimationFrame(() => applyIsometricTransformation(tile, isSceneIsometric));
   });
 
 
@@ -85,7 +73,7 @@ export function registerTileConfig() {
     if (!tile) return;
     
     const scene = tile.scene;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     
     if (updateData.x !== undefined ||
         updateData.y !== undefined ||
@@ -93,7 +81,7 @@ export function registerTileConfig() {
         updateData.height !== undefined ||
         updateData.texture !== undefined
       ){
-        requestAnimationFrame(() => applyIsometricTransformation(tile, isIsometric));
+        requestAnimationFrame(() => applyIsometricTransformation(tile, isSceneIsometric));
       }
   });
 
@@ -101,8 +89,8 @@ export function registerTileConfig() {
 
   Hooks.on("refreshTile", (tile) => {
     const scene = tile.scene;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-    applyIsometricTransformation(tile, isIsometric);
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    applyIsometricTransformation(tile, isSceneIsometric);
   });
 
 }

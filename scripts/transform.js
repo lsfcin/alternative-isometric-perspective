@@ -1,16 +1,13 @@
 import { MODULE_ID } from './main.js';
-import { isoToCartesian,
-  cartesianToIso,
-  calculateIsometricVerticalDistance
-} from './utils.js';
+import { cartesianToIso } from './utils.js';
 
 // Função principal que muda o canvas da cena
-export function applyIsometricPerspective(scene, isIsometric) {
+export function applyIsometricPerspective(scene, isSceneIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const isoAngle = Math.PI/6;
   //const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
   
-  if (isometricWorldEnabled && isIsometric) {
+  if (isometricWorldEnabled && isSceneIsometric) {
     canvas.app.stage.rotation = -isoAngle;
     canvas.app.stage.skew.set(isoAngle, 0);
     adjustAllTokensAndTilesForIsometric();
@@ -31,14 +28,14 @@ export function adjustAllTokensAndTilesForIsometric() {
 
 
 // Função auxiliar que chama a função de transformação isométrica em um objeto específico da cena (token ou tile)
-export function applyTokenTransformation(token, isIsometric) {
-  applyIsometricTransformation(token, isIsometric);
+export function applyTokenTransformation(token, isSceneIsometric) {
+  applyIsometricTransformation(token, isSceneIsometric);
 }
 
 
 
 // Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
-export function applyIsometricTransformation(object, isIsometric) {
+export function applyIsometricTransformation(object, isSceneIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   //let reverseTransform = object.document.getFlag(MODULE_ID, "reverseTransform") ?? false;
   
@@ -51,7 +48,7 @@ export function applyIsometricTransformation(object, isIsometric) {
 
 
 
-  if (isometricWorldEnabled && isIsometric) { // && !reverseTransform
+  if (isometricWorldEnabled && isSceneIsometric) { // && !reverseTransform
     // desfaz rotação e deformação
     object.mesh.rotation = Math.PI/4;
     object.mesh.skew.set(0, 0);
@@ -178,7 +175,7 @@ export function applyIsometricTransformation(object, isIsometric) {
 
 
 // Função para transformar o background da cena
-export function applyBackgroundTransformation(scene, isIsometric, shouldTransform) {
+export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTransform) {
   if (!canvas?.primary?.background) {
     if (game.settings.get(MODULE_ID, "debug")) {
       console.warn("Background não encontrado");
@@ -196,7 +193,7 @@ export function applyBackgroundTransformation(scene, isIsometric, shouldTransfor
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
   
-  if (isometricWorldEnabled && isIsometric && shouldTransform) {
+  if (isometricWorldEnabled && isSceneIsometric && shouldTransform) {
     // Aplica rotação isométrica
     background.rotation = Math.PI/4;
     background.skew.set(0, 0);

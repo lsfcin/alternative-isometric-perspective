@@ -1,14 +1,5 @@
 import { MODULE_ID } from './main.js';
-import { 
-  applyIsometricPerspective,
-  adjustAllTokensAndTilesForIsometric, 
-  applyTokenTransformation, 
-  applyIsometricTransformation, 
-  applyBackgroundTransformation, 
-  updateTokenVisuals, 
-  removeTokenVisuals 
-} from './transform.js';
-
+import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
 export function registerSceneConfig() {
 
@@ -101,12 +92,12 @@ export function registerSceneConfig() {
       changes.gridType !== undefined ||      // Verifica mudanças no tipo de grid
       changes.gridSize !== undefined) {      // Verifica mudanças no tamanho da grid
       
-      const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+      const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
       const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
       
       requestAnimationFrame(() => {
-        applyIsometricPerspective(scene, isIsometric);
-        applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+        applyIsometricPerspective(scene, isSceneIsometric);
+        applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
       });
     }
   });
@@ -121,23 +112,23 @@ export function registerSceneConfig() {
     const scene = app.object;
     if (!scene) return;
     
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
     
     // Re-apply transformations when grid config is rendered
-    if (isIsometric) {
+    if (isSceneIsometric) {
       requestAnimationFrame(() => {
-        applyIsometricPerspective(scene, isIsometric);
-        applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+        applyIsometricPerspective(scene, isSceneIsometric);
+        applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
       });
     }
     
     // Add listener for when grid config tool is being used
     html.find('.grid-config').on('change', () => {
-      if (isIsometric) {
+      if (isSceneIsometric) {
         requestAnimationFrame(() => {
-          applyIsometricPerspective(scene, isIsometric);
-          applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+          applyIsometricPerspective(scene, isSceneIsometric);
+          applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
         });
       }
     });
@@ -149,14 +140,14 @@ export function registerSceneConfig() {
     const scene = canvas.scene;
     if (!scene) return;
     
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
     
     // Re-apply isometric transformations after grid update
-    if (isIsometric) {
+    if (isSceneIsometric) {
       requestAnimationFrame(() => {
-        applyIsometricPerspective(scene, isIsometric);
-        applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+        applyIsometricPerspective(scene, isSceneIsometric);
+        applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
       });
     }
   });
@@ -167,14 +158,14 @@ export function registerSceneConfig() {
     const scene = app.object;
     if (!scene) return;
     
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
     const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
     
-    if (isometricWorldEnabled && isIsometric) {
+    if (isometricWorldEnabled && isSceneIsometric) {
       requestAnimationFrame(() => {
-        applyIsometricPerspective(scene, isIsometric);
-        applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+        applyIsometricPerspective(scene, isSceneIsometric);
+        applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
       });
     }
   });

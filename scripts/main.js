@@ -2,20 +2,7 @@ import { registerSceneConfig } from './scene.js';
 import { registerTokenConfig } from './token.js';
 import { registerTileConfig } from './tile.js';
 import { registerHUDConfig } from './hud.js';
-import { 
-  applyIsometricPerspective,
-  adjustAllTokensAndTilesForIsometric, 
-  applyTokenTransformation, 
-  applyIsometricTransformation, 
-  applyBackgroundTransformation, 
-  updateTokenVisuals, 
-  removeTokenVisuals 
-} from './transform.js';
-
-import { isoToCartesian,
-  cartesianToIso,
-  calculateIsometricVerticalDistance
-} from './utils.js';
+import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
 const MODULE_ID = "isometric-perspective";
 export { MODULE_ID };
@@ -46,7 +33,7 @@ Hooks.once("init", function() {
 
   game.settings.register(MODULE_ID, 'enableTokenVisuals', {
     name: 'Enable Token Visuals',
-    hint: 'Displays some visual cues when a token has any elevation value (a round shadow and a red line). Needs "Enable Height Adjustment" set.',
+    hint: 'When "Enable Height Adjustment" is set, displays some visual cues if a token has any elevation value (a round shadow and a vertical red line).',
     scope: 'client',
     config: true,
     default: false,
@@ -80,10 +67,10 @@ Hooks.on("canvasReady", (canvas) => {
   if (!activeScene) return;
 
   const scene = canvas.scene;
-  const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+  const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
   const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
-  applyIsometricPerspective(scene, isIsometric);
-  applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+  applyIsometricPerspective(scene, isSceneIsometric);
+  applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
 });
 
 
@@ -93,10 +80,10 @@ Hooks.on("canvasResize", (canvas) => {
   const scene = canvas.scene;
   if (!scene) return;
   
-  const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+  const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
   const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
   
-  if (isIsometric && shouldTransformBackground) {
-    applyBackgroundTransformation(scene, isIsometric, shouldTransformBackground);
+  if (isSceneIsometric && shouldTransformBackground) {
+    applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
   }
 });

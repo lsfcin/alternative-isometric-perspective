@@ -1,18 +1,4 @@
 import { MODULE_ID } from './main.js';
-import {
-  applyIsometricPerspective,
-  adjustAllTokensAndTilesForIsometric, 
-  applyTokenTransformation, 
-  applyIsometricTransformation, 
-  applyBackgroundTransformation, 
-  updateTokenVisuals, 
-  removeTokenVisuals 
-} from './transform.js';
-
-import { isoToCartesian,
-  cartesianToIso,
-  calculateIsometricVerticalDistance
-} from './utils.js';
 
 export function registerHUDConfig() {
 
@@ -20,11 +6,11 @@ export function registerHUDConfig() {
   // Hook para ajustar a posição do TokenHUD quando ele é renderizado
   Hooks.on("renderTokenHUD", (hud, html, data) => {
     const scene = game.scenes.current;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   
     // requestAnimationFrame garante que a transformação ocorre dentro do tempo de execução e no tempo correto
-    if (isometricWorldEnabled && isIsometric) {
+    if (isometricWorldEnabled && isSceneIsometric) {
       requestAnimationFrame(() => adjustHUDPosition(hud, html));
     }
   });
@@ -34,11 +20,11 @@ export function registerHUDConfig() {
   // Hook para ajustar a posição do TileHUD quando ele é renderizado
   Hooks.on("renderTileHUD", (hud, html, data) => {
     const scene = game.scenes.current;
-    const isIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
     const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   
     // requestAnimationFrame garante que a transformação ocorre dentro do tempo de execução e no tempo correto
-    if (isometricWorldEnabled && isIsometric) {
+    if (isometricWorldEnabled && isSceneIsometric) {
       requestAnimationFrame(() => adjustHUDPosition(hud, html));
     }
   });

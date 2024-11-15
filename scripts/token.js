@@ -1,17 +1,5 @@
 import { MODULE_ID } from './main.js';
-import { applyIsometricPerspective,
-  adjustAllTokensAndTilesForIsometric, 
-  applyTokenTransformation, 
-  applyIsometricTransformation, 
-  applyBackgroundTransformation, 
-  updateTokenVisuals, 
-  removeTokenVisuals 
-} from './transform.js';
-
-import { isoToCartesian,
-  cartesianToIso,
-  calculateIsometricVerticalDistance
-} from './utils.js';
+import { applyTokenTransformation, updateTokenVisuals } from './transform.js';
 
 export function registerTokenConfig() {
 
@@ -67,10 +55,10 @@ export function registerTokenConfig() {
     const token = canvas.tokens.get(tokenDocument.id);
     if (!token) return;
     
-    const isIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
 
-    applyTokenTransformation(token, isIsometric);
-    //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
+    applyTokenTransformation(token, isSceneIsometric);
+    //requestAnimationFrame(() => applyTokenTransformation(token, isSceneIsometric));
   });
 
 
@@ -80,11 +68,11 @@ export function registerTokenConfig() {
     const token = canvas.tokens.get(tokenDocument.id);
     if (!token) return;
     
-    const isIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
+    const isSceneIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
     
     if (updateData.flags?.[MODULE_ID] || updateData.x !== undefined || updateData.y !== undefined) {
-      applyTokenTransformation(token, isIsometric);
-      //requestAnimationFrame(() => applyTokenTransformation(token, isIsometric));
+      applyTokenTransformation(token, isSceneIsometric);
+      //requestAnimationFrame(() => applyTokenTransformation(token, isSceneIsometric));
     }
   });
 
@@ -92,8 +80,8 @@ export function registerTokenConfig() {
 
   // Hook para quando um token precisa ser redesenhado
   Hooks.on("refreshToken", (token) => {
-    const isIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
-    applyTokenTransformation(token, isIsometric);
+    const isSceneIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
+    applyTokenTransformation(token, isSceneIsometric);
   });
 
 
