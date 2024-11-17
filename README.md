@@ -35,7 +35,6 @@ Here are some of the features the module offers.
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/showcase-1.jpg)
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/showcase-2.jpg)
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/elevation.jpg)
-
 *Elevation previews.*
 
 ## Compatibility
@@ -78,8 +77,8 @@ Image Hover _(render the art, but it moves with the pan of the canvas. You can o
 - [ ] Add new perspectives.
 - [ ] Code to handle tiles and walls.
 - [ ] Code to handle occlusion of tiles and tokens.
-- [ ] Different art for isometric and top-down views.
-- [-] Check compatibility with other modules.
+- [ ] Different token art for isometric and top-down views.
+- [x] Check compatibility with other canvas related modules.
 - [x] Bugfix: Change tokens properties (vision) change token position.
 - [x] Using core foundry controls for token scale and anchor. *(Added in the code as an alternative, need to see yet if is worth it using).*
 

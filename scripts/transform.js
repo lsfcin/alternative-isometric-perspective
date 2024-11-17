@@ -52,6 +52,8 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   let isoTokenDisabled = object.document.getFlag(MODULE_ID, 'isoTokenDisabled') ?? 0;
   if (isoTileDisabled || isoTokenDisabled) return
 
+  
+
   if (isometricWorldEnabled && isSceneIsometric) { // && !reverseTransform
     // desfaz rotação e deformação
     object.mesh.rotation = Math.PI/4;
