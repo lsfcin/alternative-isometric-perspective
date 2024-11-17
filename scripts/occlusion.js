@@ -82,30 +82,36 @@ export class TokenEffectModule {
 	
 			// Create new color matrix filter
 			const colorMatrixFilter = new PIXI.ColorMatrixFilter();
-			colorMatrixFilter.alpha = 0.5; // Adjust alpha as needed
+			colorMatrixFilter.alpha = 1; // Adjust alpha as needed
 			colorMatrixFilter.matrix = [
 				0.000, 0.000, 0.000, 0.500, 0.000,
 				0.000, 0.000, 0.000, 0.500, 0.000,
 				0.000, 0.000, 0.000, 0.500, 0.000,
 				0.000, 0.000, 0.000, 1.000, 0.000
 			]; // Adjust color matrix as needed
+
+			// Create new alpha  filter
+			const alphaFilter = new PIXI.AlphaFilter();
+			alphaFilter.alpha = 0.5; // Adjust alpha as needed
+
 	
 			// Store the filters
-			this.PIXI_FILTERS.set(token.id, [outlineFilter, colorMatrixFilter]);
+			this.PIXI_FILTERS.set(token.id, [alphaFilter, outlineFilter, colorMatrixFilter]);
 	
 			// Apply filters to the token
 			const filters = token.mesh.filters || [];
-			filters.push(outlineFilter);
 			filters.push(colorMatrixFilter);
+			filters.push(outlineFilter);
+			filters.push(alphaFilter);
 			token.mesh.filters = filters;
 		}
 	}
  
 	static _removeOcclusionEffects(token) {
-		const [outlineFilter, colorMatrixFilter] = this.PIXI_FILTERS.get(token.id) || [];
-		if (outlineFilter && colorMatrixFilter) {
+		const [outlineFilter, colorMatrixFilter, alphaFilter] = this.PIXI_FILTERS.get(token.id) || [];
+		if (outlineFilter && colorMatrixFilter && alphaFilter) {
 			// Remove the filters
-			token.mesh.filters = (token.mesh.filters || []).filter(f => f !== outlineFilter && f !== colorMatrixFilter);
+			token.mesh.filters = (token.mesh.filters || []).filter(f => f !== outlineFilter && f !== colorMatrixFilter && f !== alphaFilter);
 			this.PIXI_FILTERS.delete(token.id);
 		}
 	}
