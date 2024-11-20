@@ -11,8 +11,13 @@
 
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID)
-
-[![](https://dcbadge.limes.pink/api/server/INVITE)](https://discord.gg/64p6ZqQBNX?compact=true)
+<span align="top">
+  <a href="https://discord.gg/64p6ZqQBNX" style="text-decoration: none; display: inline-block; font-family: Arial, sans-serif;">
+    <span style="display: flex; align-items: center; background-color: #5865f2; color: white; padding: 5px 10px; border-radius: 4px 0 0 4px;">
+      <img src="https://cdn-icons-png.freepik.com/256/15047/15047557.png" alt="Discord" style="width: 20px; height: 20px; margin-right: 5px;"> Discord Server</span>
+  </a>
+</span>
+<br><br>
 
 
 
