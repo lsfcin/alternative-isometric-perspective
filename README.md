@@ -7,11 +7,13 @@
 ![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v12+-blue)
 ![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
 ![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/latest/isometric-perspective.zip)
-![discord](https://img.shields.io/discord/1308758579532140626?label=Discord&logo=discord)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
 
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID)
+
+[![](https://dcbadge.limes.pink/api/server/INVITE)](https://discord.gg/64p6ZqQBNX?compact=true)
+
 
 
 This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
