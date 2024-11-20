@@ -61,7 +61,7 @@ Hooks.once("init", function() {
   registerTokenConfig();
   registerTileConfig();
   registerHUDConfig();
-  registerOcclusionConfig();
+  //registerOcclusionConfig();
 });
 
 
@@ -104,7 +104,7 @@ Hooks.on("canvasResize", (canvas) => {
 
 
 /**
- * @param {----- ÁREA DE TESTES -----}
+ * @param {----- TESTING AREA / ÁREA DE TESTES -----}
 */
 
 

@@ -7,6 +7,7 @@
 ![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v12+-blue)
 ![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
 ![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/latest/isometric-perspective.zip)
+![discord](https://img.shields.io/discord/1308758579532140626?label=Discord&logo=discord)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
 
 
@@ -78,6 +79,7 @@ Image Hover _(render the art, but it moves with the pan of the canvas. You can o
 - [ ] Code to handle tiles and walls.
 - [ ] Code to handle occlusion of tiles and tokens.
 - [ ] Different token art for isometric and top-down views.
+- [ ] Translation to other languages.
 - [x] Check compatibility with other canvas related modules.
 - [x] Bugfix: Change tokens properties (vision) change token position.
 - [x] Using core foundry controls for token scale and anchor. *(Added in the code as an alternative, need to see yet if is worth it using).*
