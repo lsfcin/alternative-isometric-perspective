@@ -17,9 +17,7 @@
       <img src="https://cdn-icons-png.freepik.com/256/15047/15047557.png" alt="Discord" style="width: 20px; height: 20px; margin-right: 5px;"> Discord Server</span>
   </a>
 </span>
-<br><br>
-
-
+<br>
 
 This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
 
