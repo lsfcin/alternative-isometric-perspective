@@ -1,0 +1,38 @@
+{
+    "settings.main.name": "Enable Isometric Perspective",
+    "settings.main.hint": "Toggle whether the isometric perspective is applied to the canvas.",
+    "settings.height.name": "Enable Height Adjustment",
+    "settings.height.hint": "Toggle whether token sprites adjust their position to reflect their elevation.",
+    "settings.visuals.name": "Enable Token Visuals",
+    "settings.visuals.hint": "Displays a circular shadow and a vertical red line to indicate token elevation. Requires 'Enable Height Adjustment' to be active.",
+    "settings.debug.name": "Enable Debug Mode",
+    "settings.debug.hint": "Enables debug prints.",
+
+    "tab.Isometric.name": "Isometric",
+    
+    "scene.enableIsometric": "Enable Isometric for this Scene.",
+    "scene.transform.name": "Transform Background Image.",
+    "scene.transform.hint": "Apply isometric transformation to the background image.",
+    "scene.scale.name": "Isometric Scale.",
+    "scene.scale.hint": "Adjust scale of art in isometric mode (Range: 0.5x to 3x). The 'Offset Background (Pixels)' in <i class='fas fa-ruler'></i> Grid tab can be used to shift/move the background.",
+
+    "token.enableIsometric.name": "Disable Isometric Token.",
+    "token.enableIsometric.hint": "Disable isometric transformation on this token.",
+    "token.artOffset.name": "Art Offset.",
+    "token.artOffset.axisH": "Horizontal.",
+    "token.artOffset.axisV": "Vertical.",
+    "token.artOffset.hint": "Offset the token art position in pixels.",
+    "token.scale.name": "Isometric Scale.",
+    "token.scale.hint": "Adjust scale of token art when in isometric perspective (0.01x to 3x).",
+
+    "tile.enableIsometric.name": "Disable Isometric Tile.",
+    "tile.enableIsometric.hint": "Disable isometric transformation on this tile.",
+    "tile.artOffset.name": "Art Offset.",
+    "tile.artOffset.axisH": "Horizontal.",
+    "tile.artOffset.axisV": "Vertical.",
+    "tile.artOffset.hint": "Offset the tile art position in pixels.",
+    "tile.scale.name": "Isometric Scale.",
+    "tile.scale.hint": "Adjust scale of tile art when in isometric perspective (0.01x to 3x).",
+    "tile.flip.name": "Flip Tile.",
+    "tile.flip.hint": "Flip the tile art horizontally. Works only with isometric transformation on."
+}

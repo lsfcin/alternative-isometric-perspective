@@ -6,7 +6,7 @@
 
 ![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v12+-blue)
 ![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
-![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/latest/total?color=red)
+![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/latest/isometric-perspective.zip)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
 
 

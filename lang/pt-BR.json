@@ -1,0 +1,38 @@
+{
+    "settings.main.name": "Habilitar Perspectiva Isométrica",
+    "settings.main.hint": "Ativa ou desativa a perspectiva isométrica no canvas.",
+    "settings.height.name": "Habilitar Ajuste de Altura",
+    "settings.height.hint": "Ativa ou desativa o ajuste da posição da arte dos tokens para refletir sua elevação.",
+    "settings.visuals.name": "Habilitar Dicas Visuais de Elevação dos Tokens",
+    "settings.visuals.hint": "Exibe uma sombra circular e uma linha vermelha vertical para indicar a elevação do token. Requer que 'Habilitar Ajuste de Altura' esteja ativo.",
+    "settings.debug.name": "Habilitar Modo de Depuração",
+    "settings.debug.hint": "Ativa mensagens de depuração.",
+
+    "tab.Isometric.name": "Isométrico",
+    
+    "scene.enableIsometric": "Habilita Isométrico para esta Cena.",
+    "scene.transform.name": "Transformar Imagem de Fundo.",
+    "scene.transform.hint": "Aplica transformação isométrica à imagem de fundo.",
+    "scene.scale.name": "Proporção Isométrica.",
+    "scene.scale.hint": "Ajusta a proporção da arte no modo isométrico (Intervalo: 0.5x a 3x). O 'Deslocamento do Fundo (Pixels)' na aba <i class='fas fa-ruler'></i> Grade pode ser usado para mover o fundo.",
+
+    "token.enableIsometric.name": "Desabilitar Token Isométrico.",
+    "token.enableIsometric.hint": "Desabilita a transformação isométrica neste token.",
+    "token.artOffset.name": "Deslocamento da Arte.",
+    "token.artOffset.axisH": "Horizontal.",
+    "token.artOffset.axisV": "Vertical.",
+    "token.artOffset.hint": "Desloca a posição da arte do token em pixels.",
+    "token.scale.name": "Proporção Isométrica.",
+    "token.scale.hint": "Ajusta a proporção da arte do token na perspectiva isométrica (0.01x a 3x).",
+
+    "tile.enableIsometric.name": "Desabilitar Tile Isométrico.",
+    "tile.enableIsometric.hint": "Desabilita a transformação isométrica neste tile.",
+    "tile.artOffset.name": "Deslocamento da Arte.",
+    "tile.artOffset.axisH": "Horizontal.",
+    "tile.artOffset.axisV": "Vertical.",
+    "tile.artOffset.hint": "Desloca a posição da arte do tile em pixels.",
+    "tile.scale.name": "Proporção Isométrica.",
+    "tile.scale.hint": "Ajusta a proporção da arte do tile na perspectiva isométrica (0.01x a 3x).",
+    "tile.flip.name": "Espelhar Tile.",
+    "tile.flip.hint": "Inverte horizontalmente a arte do tile. Funciona apenas com a transformação isométrica ativada."
+}

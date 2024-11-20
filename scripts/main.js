@@ -2,7 +2,8 @@ import { registerSceneConfig } from './scene.js';
 import { registerTokenConfig } from './token.js';
 import { registerTileConfig } from './tile.js';
 import { registerHUDConfig } from './hud.js';
-import { TokenEffectModule } from './occlusion.js';
+import { registerOcclusionConfig } from './occlusion.js';
+//import { TokenEffectModule } from './occlusion.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
 const MODULE_ID = "isometric-perspective";
@@ -53,13 +54,14 @@ Hooks.once("init", function() {
     //onChange: settings => window.location.reload()
   });
 
-  TokenEffectModule.initialize();
+  //TokenEffectModule.initialize();
 
   // Registra as configurações do módulo
   registerSceneConfig();
   registerTokenConfig();
   registerTileConfig();
   registerHUDConfig();
+  registerOcclusionConfig();
 });
 
 
@@ -104,3 +106,6 @@ Hooks.on("canvasResize", (canvas) => {
 /**
  * @param {----- ÁREA DE TESTES -----}
 */
+
+
+

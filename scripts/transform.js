@@ -1,15 +1,55 @@
 import { MODULE_ID } from './main.js';
 import { cartesianToIso } from './utils.js';
 
+const ISOMETRIC_TRUE_ROTATION = Math.PI/6;
+
+// values in degrees
+export let ISOMETRIC_CONST = {
+  rotation: -30.0,
+  skewX:     30.0,
+  skewY:      0.0
+}
+
+//convert to rad
+ISOMETRIC_CONST.rotation *= Math.PI / 180;
+ISOMETRIC_CONST.skewX *= Math.PI / 180;
+ISOMETRIC_CONST.skewY *= Math.PI / 180;
+
+/*
+True Isometric
+
+Planescape Torment
+  rotation: -34.90,
+  skewX:     19.75,
+  skewY:      0.00
+
+Fallout
+  rotation: -50.9,
+  skewX:      2.3,
+  skewY:     36.8
+
+Earthbound / Paperboy
+  rotation:   0,
+  skewX:    -45,
+  skewY:      0
+*/
+
+
+
+
+
+
+
+
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isSceneIsometric) {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
-  const isoAngle = Math.PI/6;
+  //const isoAngle = ISOMETRIC_TRUE_ROTATION;
   //const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
   
   if (isometricWorldEnabled && isSceneIsometric) {
-    canvas.app.stage.rotation = -isoAngle;
-    canvas.app.stage.skew.set(isoAngle, 0);
+    canvas.app.stage.rotation = ISOMETRIC_CONST.rotation;
+    canvas.app.stage.skew.set(ISOMETRIC_CONST.skewX, ISOMETRIC_CONST.skewY);
     adjustAllTokensAndTilesForIsometric();
   } else {
     canvas.app.stage.rotation = 0;
@@ -262,6 +302,12 @@ export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTra
 }
 
 
+
+
+
+
+
+
 // ----------------- Elevation -----------------
 
 // Manter registro de todos os containers visuais criados
@@ -336,12 +382,10 @@ export function removeTokenVisuals(token) {
   }
 }
 
-// Hook para limpar os visuais quando a cena é descarregada
-Hooks.on('canvasReady', () => {
+Hooks.on('canvasReady', () => { 
   clearAllVisuals();
 });
 
-// Hook para atualizar visuais quando tokens são deletados
 Hooks.on('deleteToken', (token) => {
   removeTokenVisuals(token);
 });
