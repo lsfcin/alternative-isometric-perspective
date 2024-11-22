@@ -1,6 +1,11 @@
 // export all functions to main.js
 export function registerOcclusionConfig() {
-	// Hooks diretos
+	/*
+	const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+	const enableOcclusionTokenSilhouette = game.settings.get(MODULE_ID, "enableOcclusionTokenSilhouette");
+	if (!isometricWorldEnabled || !enableOcclusionTokenSilhouette) return;
+	*/
+	 
 	Hooks.on('createToken',  handleTokenDocument);
 	Hooks.on('updateToken',  handleTokenDocument);
 	Hooks.on('refreshToken', processTokenOcclusion);
@@ -20,6 +25,16 @@ export function registerOcclusionConfig() {
 const PIXI_FILTERS = new Map();
 
 // Funções principais
+function processAllTokens() {
+	canvas.tokens.placeables.forEach(function(token) {
+		processTokenOcclusion(token);
+	});
+}
+
+function handleTokenDocument(tokenDoc) {
+	processTokenOcclusion(tokenDoc.object);
+}
+
 function processTokenOcclusion(token) {
 	if (!token?.mesh) return;
 
@@ -31,6 +46,11 @@ function processTokenOcclusion(token) {
 		removeOcclusionEffects(token);
 	}
 }
+
+
+
+
+
 
 function checkTokenOcclusion(token) {
 	// Get all tiles that might occlude the token
@@ -95,15 +115,6 @@ function removeOcclusionEffects(token) {
 	}
 }
 
-function processAllTokens() {
-	canvas.tokens.placeables.forEach(function(token) {
-		processTokenOcclusion(token);
-	});
-}
-
-function handleTokenDocument(tokenDoc) {
-	processTokenOcclusion(tokenDoc.object);
-}
 
 
 

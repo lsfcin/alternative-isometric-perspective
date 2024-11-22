@@ -28,6 +28,16 @@ async function handleRenderTokenConfig(app, html, data) {
   const lastTab = html.find('.tab').last();
   lastTab.after(tabHtml);
 
+  // keeps the window height on auto
+  const sheet = html.closest('.sheet');
+  if (sheet.length) {
+    sheet.css({ 'height': 'auto', 'min-height': '0' });
+    const windowContent = sheet.find('.window-content');
+    if (windowContent.length) {
+      windowContent.css({ 'height': 'auto', 'overflow': 'visible' });
+    }
+  }
+
   // Inicializa os valores dos controles
   const isoTokenCheckbox = html.find('input[name="flags.isometric-perspective.isoTokenDisabled"]');
   isoTokenCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTokenDisabled"));

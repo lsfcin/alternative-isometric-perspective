@@ -16,7 +16,8 @@ async function handleRenderTileConfig(app, html, data) {
     scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1,
     isFlipped: app.object.getFlag(MODULE_ID, 'tokenFlipped') ?? false,
     offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
-    offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0
+    offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0,
+    linkedWallId: app.object.getFlag(MODULE_ID, 'linkedWallId') || null
   });
 
   // Adiciona a nova aba ao menu
@@ -27,14 +28,24 @@ async function handleRenderTileConfig(app, html, data) {
   const lastTab = html.find('.tab').last();
   lastTab.after(tabHtml);
 
+  // keeps the window height on auto
+  const sheet = html.closest('.sheet');
+  if (sheet.length) {
+    sheet.css({ 'height': 'auto', 'min-height': '0' });
+    const windowContent = sheet.find('.window-content');
+    if (windowContent.length) {
+      windowContent.css({ 'height': 'auto', 'overflow': 'visible' });
+    }
+  }
 
   // Inicializa os valores dos controles
   const isoTileCheckbox = html.find('input[name="flags.isometric-perspective.isoTileDisabled"]');
   const flipCheckbox = html.find('input[name="flags.isometric-perspective.tokenFlipped"]');
+  const linkedWallInput = html.find('input[name="flags.isometric-perspective.linkedWallId"]');
   
   isoTileCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTileDisabled"));
   flipCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "tokenFlipped"));
-
+  linkedWallInput.val(app.object.getFlag(MODULE_ID, 'linkedWallId') || '');
   
   // Adiciona listener para atualizar o valor exibido do slider
   html.find('.scale-slider').on('input', function() {
@@ -56,18 +67,51 @@ async function handleRenderTileConfig(app, html, data) {
     } else {
       await app.object.unsetFlag(MODULE_ID, "tokenFlipped");
     }
+
+    // dynamictile.js linked wall logic
+    if (linkedWallInput.val()) {
+      await app.object.setFlag(MODULE_ID, 'linkedWallId', linkedWallInput.val());
+    } else {
+      await app.object.unsetFlag(MODULE_ID, 'linkedWallId');
+    }
   });
 
-  // Corrige a inicialização das tabs
-  if (!app._tabs || app._tabs.length === 0) {
-    app._tabs = [new Tabs({
-      navSelector: ".tabs",
-      contentSelector: ".sheet-body",
-      initial: "image",
-      callback: () => {}
-    })];
-    app._tabs[0].bind(html[0]);
-  }
+  
+  // dynamictile.js event listeners for the buttons
+  html.find('button.select-wall').click(() => {
+    // Minimiza a janela e muda a camada selecionada para a WallLayer
+    Object.values(ui.windows).filter(w => w instanceof TileConfig).forEach(j => j.minimize());
+    canvas.walls.activate();
+
+    Hooks.once('controlWall', (wall) => {
+      const selectedWallId = wall.id.toString();
+      app.object.setFlag(MODULE_ID, 'linkedWallId', selectedWallId);
+      html.find('input[name="flags.isometric-perspective.linkedWallId"]').val(selectedWallId);
+      
+      // Retorna a janela a posição original e ativa a camada TileLayer
+      Object.values(ui.windows).filter(w => w instanceof TileConfig).forEach(j => j.maximize());
+      canvas.tiles.activate();
+
+      // Keep the tab selected
+      requestAnimationFrame(() => {
+        const tabs = app._tabs[0];
+        if (tabs) tabs.activate("isometric");
+      });
+      
+    });
+  });
+
+  html.find('button.clear-wall').click(() => {
+    app.object.setFlag(MODULE_ID, 'linkedWallId', null);
+    html.find('input[name="flags.isometric-perspective.linkedWallId"]').val('');
+
+    // Keep the tab selected
+    requestAnimationFrame(() => {
+      const tabs = app._tabs[0];
+      if (tabs) tabs.activate("isometric");
+    });
+  });
+
 }
 
 

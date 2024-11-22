@@ -10,11 +10,11 @@ export function isoToCartesian(isoX, isoY) {
 }
 
 // Função auxiliar para converter coordenadas cartesianas para isométricas
-export function cartesianToIso(cartX, cartY) {
+export function cartesianToIso(isoX, isoY) {
   const angle = Math.PI / 4; // 45 graus em radianos
   return {
-    x: (cartX * Math.cos(-angle) - cartY * Math.sin(-angle)),
-    y: (cartX * Math.sin(-angle) + cartY * Math.cos(-angle))
+    x: (isoX * Math.cos(-angle) - isoY * Math.sin(-angle)),
+    y: (isoX * Math.sin(-angle) + isoY * Math.cos(-angle))
   };
 }
 

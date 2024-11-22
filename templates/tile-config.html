@@ -45,6 +45,19 @@
     <p class="notes">Flip the tile art horizontally. Works only with isometric transformation on.</p>
   </div>
 
+  <hr>
+
+  <div class="form-group">
+    <label>Link Wall</label>
+    <input type="text" name="flags.isometric-perspective.linkedWallId" value="${linkedWallId}" readonly>
+  </div>
+  
+  <div class="form-group">
+    <button type="button" class="select-wall"><i class="fas fa-plug"></i> Select Wall</button>
+    <button type="button" class="clear-wall"><i class="fa-solid fa-burst"></i> Clear Wall</button>
+    <p class="notes">Click the button to select a wall. This wall will be used to determine the tile's visibility for the selected token.</p>
+  </div>
+
   <style>
     .scale-slider {
       flex: 4;
