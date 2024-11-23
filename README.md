@@ -6,7 +6,7 @@
 
 ![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v12+-blue)
 ![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
-![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/latest/isometric-perspective.zip)
+![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/isometric-perspective.zip?color=yellow)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
 
 
@@ -29,6 +29,7 @@ Here are some of the features the module offers.
 - **Token Sprite Adjustments:** You can fine-tune the position of the token sprite, as well as its scale. Increasing the size of the token automatically increases the size of the sprite.
 - **Tile Sprite Adjustments:** You can also fine-tune the sprite position and scale, making easy to copy and paste multiple tiles. There's also a easy Flip Tile option.
 - **Token Height Visual Cues:** If a token has any elevation, its sprite adjusts to reflect the height, with a round shadow and line sprites being created for clarity.
+- **Dynamic Tile:** If a tile is configured, the position of the token can make a tile invisible.
 
 ## Configuration Screens
 
