@@ -40,6 +40,8 @@ Here are some of the features the module offers.
 
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/showcase-1.jpg)
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/showcase-2.jpg)
+![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/dynamictile.jpg)
+*Dynamic Tile previews.*
 ![](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/elevation.jpg)
 *Elevation previews.*
 
@@ -68,6 +70,7 @@ Rideable _(if both mount and rider tokens have the same size, isn't possible to 
 
 - **Not working**  
 Image Hover _(render the art, but it moves with the pan of the canvas. You can only see it if you use hotkeys, and will not show the entire art)_
+LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
 ## Known Bugs
 

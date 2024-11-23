@@ -3,7 +3,7 @@ import { registerTokenConfig } from './token.js';
 import { registerTileConfig } from './tile.js';
 import { registerHUDConfig } from './hud.js';
 import { registerOcclusionConfig } from './occlusion.js';
-import { registerDynamicTileConfig } from './dynamictile.js';
+import { registerDynamicTileConfig, increaseTilesOpacity, decreaseTilesOpacity } from './dynamictile.js';
 //import { TokenEffectModule } from './occlusion.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
@@ -12,7 +12,9 @@ export { MODULE_ID };
 
 // Hook para registrar a configuração do módulo no Foundry VTT
 Hooks.once("init", function() {
-  // Configuração do checkbox para habilitar ou desabilitar o modo isométrico globalmente
+  
+  // ------------- Registra as configurações do módulo ------------- 
+  
   game.settings.register(MODULE_ID, "worldIsometricFlag", {
     name: "Enable Isometric Perspective",
     hint: "Toggle whether the isometric perspective is applied to the canvas.",
@@ -46,7 +48,7 @@ Hooks.once("init", function() {
 
   game.settings.register(MODULE_ID, 'enableOcclusionDynamicTile', {
     name: 'Enable Occlusion: Dynamic Tile',
-    hint: ' (THIS FEATURE IS IN WORKING PROGRESS AND WASN\'T TESTED. USE WITH CAUTION) Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
+    hint: '(BETA FEATURE. USE WITH CAUTION) Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
     scope: 'world',
     config: true,
     default: false,
@@ -77,15 +79,59 @@ Hooks.once("init", function() {
     //onChange: settings => window.location.reload()
   });
 
-  //TokenEffectModule.initialize();
 
-  // Registra as configurações do módulo
+
+
+
+
+
+
+
+  // ------------- Registra os atalhos do módulo ------------- 
+  
+  game.keybindings.register(MODULE_ID, 'increaseTilesOpacity', {
+    name: 'Increase Tiles Opacity',
+    hint: 'Increases the opacity of always visible tiles',
+    editable: [
+        { key: 'NumpadAdd', modifiers: ['Control'] }
+    ],
+    onDown: () => {
+        increaseTilesOpacity();
+    },
+    restricted: false,
+    reservedModifiers: [],
+    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
+  });
+
+  game.keybindings.register(MODULE_ID, 'decreaseTilesOpacity', {
+    name: 'Decrease Tiles Opacity',
+    hint: 'Decreases the opacity of always visible tiles',
+    editable: [
+        { key: 'NumpadSubtract', modifiers: ['Control'] }
+    ],
+    onDown: () => {
+        decreaseTilesOpacity();
+    },
+    restricted: false,
+    reservedModifiers: [],
+    precedence: CONST.KEYBINDING_PRECEDENCE.NORMAL
+  });
+
+  
+
+
+
+
+  // ------------- Executa os hooks essenciais do módulo -------------
   registerSceneConfig();
   registerTokenConfig();
   registerTileConfig();
   registerHUDConfig();
-  //registerOcclusionConfig();
+
+  // ------------- Executa os hooks de funcionalidades adicionais do módulo -------------
   registerDynamicTileConfig();
+  //registerOcclusionConfig();
+
 });
 
 
@@ -175,23 +221,10 @@ Hooks.on("getSceneControlButtons", (controls) => {
 */
 
 
-Hooks.on("getSceneControlButtons", (controls) => {
-  const newButtons = controls.find(b => b.name === "tiles"); // "token, measure, tiles, drawings, walls, lightning"
 
-  newButtons.tools.push({
-    name: 'select-templates',
-    title: 'Toggle 2',
-    icon: 'fa-duotone fa-solid fa-layer-group',
-    toggle: true,
-    active: true,
-    onClick: (toggle) => {
-      if (toggle) {
-        console.log("sim");
-      } else {
-        console.log("não");
-      }
-    }
-  },
+
+/*
+,
   {
     name: "dtaligntool", // just some identifier
     title: "coisina",  // more like the label shown in the tooltip
@@ -227,6 +260,5 @@ Hooks.on("getSceneControlButtons", (controls) => {
       }
     },
     button: true
-  });
-});
-
+  }
+*/

@@ -3,16 +3,9 @@ import { MODULE_ID } from './main.js';
 export function registerDynamicTileConfig() {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const enableOcclusionDynamicTile = game.settings.get(MODULE_ID, "enableOcclusionDynamicTile");
-  if (!isometricWorldEnabled || !enableOcclusionDynamicTile) return;
-
-
-
-
   //const isometricEnabled = game.settings.get(MODULE_ID, "isometricEnabled");
+  if (!isometricWorldEnabled || !enableOcclusionDynamicTile) return;
   //if (!isometricWorldEnabled || !enableOcclusionDynamicTile || !isometricEnabled) return;
-
-
-
 
   // ---------------------- CANVAS ----------------------
   Hooks.on('canvasInit', () => {
@@ -58,6 +51,14 @@ export function registerDynamicTileConfig() {
   });
   Hooks.on('canvasReady', () => {
     updateAlwaysVisibleElements();
+  });
+  Hooks.on('canvasTokensRefresh', () => {
+    updateAlwaysVisibleElements();
+  });
+  Hooks.on('updateUser', (user, changes) => {
+    if (user.id === game.user.id && 'character' in changes) {
+      updateAlwaysVisibleElements();
+    }
   });
 
 
@@ -124,6 +125,27 @@ export function registerDynamicTileConfig() {
       updateAlwaysVisibleElements();
     }
   });
+
+  // Additional buttons for the tile layer
+  Hooks.on("getSceneControlButtons", (controls) => {
+    const newButtons = controls.find(b => b.name === "tiles"); // "token, measure, tiles, drawings, walls, lightning"
+  
+    newButtons.tools.push({
+      name: 'dynamic-tile-increase',
+      title: 'Increase Dynamic Tile Opacity',
+      icon: 'fa-solid fa-layer-group',
+      active: true,
+      onClick: () => increaseTilesOpacity(),
+      button: true
+    },{
+      name: 'dynamic-tile-decrease',
+      title: 'Decrease Dynamic Tile Opacity',
+      icon: 'fa-duotone fa-solid fa-layer-group',
+      active: true,
+      onClick: () => decreaseTilesOpacity(),
+      button: true
+    });
+  });
 }
 
 
@@ -132,8 +154,62 @@ export function registerDynamicTileConfig() {
 let alwaysVisibleContainer;
 let tilesLayer;
 let tokensLayer;
+let tilesOpacity = 1.0;
+let tokensOpacity = 1.0;
 let selectedWallId = null;
 let lastControlledToken = null;
+
+
+function updateLayerOpacity(layer, opacity) {
+  if (!layer) return;
+  layer.children.forEach(sprite => {
+      sprite.alpha = opacity;
+  });
+}
+
+export function updateTilesOpacity(value) {
+  tilesOpacity = Math.max(0, Math.min(1, value));
+  if (tilesLayer) {
+    updateLayerOpacity(tilesLayer, tilesOpacity);
+  }
+}
+
+export function increaseTilesOpacity() {
+  updateTilesOpacity(tilesOpacity + 0.5);
+}
+
+export function decreaseTilesOpacity() {
+  updateTilesOpacity(tilesOpacity - 0.5);
+}
+
+export function resetOpacity() {
+  tilesOpacity = 1.0;
+  updateTilesOpacity(tilesOpacity);
+
+  //tokensOpacity = 1.0;
+  //updateTokensOpacity(tokensOpacity);
+}
+
+/*
+export function updateTokensOpacity(value) {
+  tokensOpacity = Math.max(0, Math.min(1, value));
+  if (tokensLayer) {
+      updateLayerOpacity(tokensLayer, tokensOpacity);
+  }
+}
+
+export function increaseTokensOpacity() {
+  updateTokensOpacity(tokensOpacity + 0.1);
+}
+
+export function decreaseTokensOpacity() {
+  updateTokensOpacity(tokensOpacity - 0.1);
+}
+*/
+
+
+
+
 
 function cloneTileSprite(tile) {
   const sprite = new PIXI.Sprite(tile.texture);
@@ -141,7 +217,7 @@ function cloneTileSprite(tile) {
   sprite.anchor.set(tile.anchor.x, tile.anchor.y);
   sprite.angle = tile.angle;
   sprite.scale.set(tile.scale.x, tile.scale.y);
-  sprite.alpha = tile.alpha;
+  sprite.alpha = tile.alpha * tilesOpacity;
   sprite.eventMode = 'passive';
   sprite.originalTile = tile;
   return sprite;
@@ -153,10 +229,34 @@ function cloneTokenSprite(token) {
   sprite.anchor.set(token.anchor.x, token.anchor.y);
   sprite.angle = token.angle;
   sprite.scale.set(token.scale.x, token.scale.y);
-  sprite.alpha = token.alpha;
+  sprite.alpha = token.alpha * tokensOpacity;
   sprite.eventMode = 'passive';
   sprite.originalToken = token;
   return sprite;
+}
+
+// Função para encontrar o token inicial na inicialização
+function getInitialToken() {
+  // Primeiro, tenta pegar o token controlado
+  const controlled = canvas.tokens.controlled[0];
+  if (controlled) return controlled;
+
+  // Se não houver token controlado, tenta usar o último token conhecido
+  if (lastControlledToken) return lastControlledToken;
+
+  // Se não houver último token conhecido, tenta pegar o token do personagem do usuário
+  const actor = game.user.character;
+  if (actor) {
+      const userToken = canvas.tokens.placeables.find(t => t.actor?.id === actor.id);
+      if (userToken) return userToken;
+  }
+
+  // Se ainda não encontrou, pega o primeiro token que o usuário possui permissão
+  const availableToken = canvas.tokens.placeables.find(t => t.observer);
+  if (availableToken) return availableToken;
+
+  // Se tudo falhar, retorna null
+  return null;
 }
 
 function updateAlwaysVisibleElements() {
@@ -167,7 +267,7 @@ function updateAlwaysVisibleElements() {
   tokensLayer.removeChildren();
 
   // Obtém o token selecionado
-  const controlled = canvas.tokens.controlled[0] || lastControlledToken;
+  const controlled = getInitialToken();
   if (!controlled) return;
 
   // Coleta tiles com paredes vinculadas
@@ -219,6 +319,9 @@ function updateAlwaysVisibleElements() {
       tokensLayer.addChild(tokenSprite);
     }
   });
+
+  updateLayerOpacity(tilesLayer, tilesOpacity);
+  //updateLayerOpacity(tokensLayer, tokensOpacity);
 
   // Habilita o zIndex para a camada de tokens
   tokensLayer.sortableChildren = true;
@@ -323,13 +426,15 @@ function isTokenInFrontOfWall(token, wall) {
   const { x: tokenX, y: tokenY } = token.center;
 
   // Verifica se a parede é horizontal (ângulo próximo a 0°)
+  // Token está em frente se estiver abaixo da linha horizontal
   if (Math.abs(y1 - y2) < 0.001) {
-    return tokenY > y1; // Token está em frente se estiver abaixo da linha horizontal
+    return tokenY > y1;
   }
 
   // Verifica se a parede é vertical (ângulo próximo a 90°)
+  // Token está em frente se estiver à esquerda da linha vertical
   if (Math.abs(x1 - x2) < 0.001) {
-    return tokenX < x1; // Token está em frente se estiver à esquerda da linha vertical
+    return tokenX < x1;
   }
 
   // Calcula o ângulo da parede com a horizontal
