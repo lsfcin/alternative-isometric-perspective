@@ -17,6 +17,9 @@ ISOMETRIC_CONST.skewY *= Math.PI / 180;
 
 /*
 True Isometric
+  rotation: -30.0,
+  skewX:     30.0,
+  skewY:      0.0
 
 Planescape Torment
   rotation: -34.90,
@@ -24,9 +27,9 @@ Planescape Torment
   skewY:      0.00
 
 Fallout
-  rotation: -50.9,
-  skewX:      2.3,
-  skewY:     36.8
+  rotation: -50.90,
+  skewX:      2.30,
+  skewY:     36.80
 
 Earthbound / Paperboy
   rotation:   0,

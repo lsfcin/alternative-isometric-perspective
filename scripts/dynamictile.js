@@ -121,8 +121,17 @@ export function registerDynamicTileConfig() {
   });
 
   Hooks.on('updateWall', (wallDocument, change, options, userId) => {
-    if (selectedWallId && wallDocument.id === selectedWallId) {
-      updateAlwaysVisibleElements();
+    // Verifica se a mudança é relacionada ao estado da porta
+    if ('ds' in change) {
+      // Procura por tiles que têm esta wall vinculada
+      const linkedTiles = canvas.tiles.placeables.filter(tile => 
+        tile.document.getFlag(MODULE_ID, 'linkedWallId') === wallDocument.id
+      );
+      
+      // Se encontrou algum tile vinculado, atualiza os elementos visíveis
+      if (linkedTiles.length > 0) {
+        updateAlwaysVisibleElements();
+      }
     }
   });
 
@@ -211,13 +220,20 @@ export function decreaseTokensOpacity() {
 
 
 
-function cloneTileSprite(tile) {
+function cloneTileSprite(tile, wall) {
   const sprite = new PIXI.Sprite(tile.texture);
   sprite.position.set(tile.position.x, tile.position.y);
   sprite.anchor.set(tile.anchor.x, tile.anchor.y);
   sprite.angle = tile.angle;
   sprite.scale.set(tile.scale.x, tile.scale.y);
-  sprite.alpha = tile.alpha * tilesOpacity;
+  
+  // Verifica se a wall é uma porta e está aberta
+  let alpha = tile.alpha * tilesOpacity;
+  if (wall && (wall.document.door === 1 || wall.document.door === 2) && wall.document.ds === 1) {
+    return null; // Não cria o sprite se a porta estiver aberta
+  }
+  
+  sprite.alpha = alpha;
   sprite.eventMode = 'passive';
   sprite.originalTile = tile;
   return sprite;
@@ -282,8 +298,11 @@ function updateAlwaysVisibleElements() {
     
     // Verifica se o token pode ver a parede vinculada
     if (wall && canTokenSeeWall(controlled, wall)) {
-      const clonedSprite = cloneTileSprite(tile.mesh);
-      tilesLayer.addChild(clonedSprite);
+      const clonedSprite = cloneTileSprite(tile.mesh, wall);
+      // Só adiciona o sprite se ele foi criado (não é null)
+      if (clonedSprite) {
+        tilesLayer.addChild(clonedSprite);
+      }
     }
   });
 
@@ -305,6 +324,11 @@ function updateAlwaysVisibleElements() {
         
         if (!wall) return false;
 
+        // Se a wall for uma porta e estiver aberta, não considera o token como "atrás"
+        if ((wall.document.door === 1 || wall.document.door === 2) && wall.document.ds === 1) {
+          return false;
+        }
+        
         // Verifica se o token está acima da parede
         return isTokenInFrontOfWall(token, wall);
       });
