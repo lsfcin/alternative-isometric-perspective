@@ -61,6 +61,7 @@ async function handleRenderSceneConfig(sceneConfig, html, data) {
       requestAnimationFrame(() => {
         applyIsometricPerspective(sceneConfig.object, newIsometric);
         applyBackgroundTransformation(sceneConfig.object, newIsometric, newBackground);
+        canvas.draw(); // Redraw the scene
       });
     }
 

@@ -26,8 +26,13 @@ const PIXI_FILTERS = new Map();
 
 // Funções principais
 function processAllTokens() {
-	canvas.tokens.placeables.forEach(function(token) {
-		processTokenOcclusion(token);
+	// Em vez de processar todos os tokens, vamos verificar cada token individualmente
+	canvas.tokens.placeables.forEach(token => {
+		 // Verificar se o token realmente precisa do efeito
+		 const hasCollision = checkTokenCollisions(token);
+		 if (!hasCollision) {
+			  removeOcclusionEffects(token);
+		 }
 	});
 }
 
@@ -35,6 +40,7 @@ function handleTokenDocument(tokenDoc) {
 	processTokenOcclusion(tokenDoc.object);
 }
 
+/*
 function processTokenOcclusion(token) {
 	if (!token?.mesh) return;
 
@@ -46,64 +52,271 @@ function processTokenOcclusion(token) {
 		removeOcclusionEffects(token);
 	}
 }
+*/
 
+function processTokenOcclusion(token) {
+	if (!token?.mesh) return;
 
-
-
-
-
-function checkTokenOcclusion(token) {
-	// Get all tiles that might occlude the token
-	const tiles = canvas.tiles.placeables.filter(function(tile) {
-		// Only check tiles with occlusion enabled
-		return tile.document.occlusion?.mode !== CONST.TILE_OCCLUSION_MODES.NONE;
-	});
-
-	// Check if any tile occludes the token
-	return tiles.some(function(tile) {
-		// Get the real dimensions of the token and tile sprite after transformations
-		const tokenBounds = token.mesh.getBounds();
-		const tileBounds = tile.mesh.getBounds();
-
-		// Check intersection using the transformed dimensions
-		return !(tokenBounds.right < tileBounds.left ||
-			tokenBounds.left > tileBounds.right ||
-			tokenBounds.bottom < tileBounds.top ||
-			tokenBounds.top > tileBounds.bottom);
-	});
+	const tiles = canvas.tiles.placeables.filter(tile => 
+		 tile.document.occlusion?.mode !== CONST.TILE_OCCLUSION_MODES.NONE
+	);
+	
+	let hasOcclusion = false;
+	
+	for (const tile of tiles) {
+		 const { occluded, intersectionArea } = checkTokenOcclusionPixels(token, tile);
+		 if (occluded) {
+			  applyOcclusionEffects(token, intersectionArea);
+			  hasOcclusion = true;
+			  break;
+		 }
+	}
+	
+	if (!hasOcclusion) {
+		 removeOcclusionEffects(token);
+	}
 }
 
-function applyOcclusionEffects(token) {
+
+function checkTokenCollisions(token) {
+	if (!token?.mesh) return false;
+
+	// Verifica todos os tiles, não apenas os que têm oclusão
+	const tiles = canvas.tiles.placeables;
+	
+	// Verifica cada tile para colisão
+	for (const tile of tiles) {
+		 if (checkPixelCollision(token, tile)) {
+			  applyOcclusionEffects(token, tile);
+			  return true;
+		 }
+	}
+	
+	return false;
+}
+
+function checkPixelCollision(token, tile) {
+	const tokenSprite = token.mesh;
+	const tileSprite = tile.mesh;
+	
+	// Primeiro faz uma verificação rápida de bounds
+	const tokenBounds = tokenSprite.getBounds();
+	const tileBounds = tileSprite.getBounds();
+	
+	if (!(tokenBounds.right < tileBounds.left ||
+			tokenBounds.left > tileBounds.right ||
+			tokenBounds.bottom < tileBounds.top ||
+			tokenBounds.top > tileBounds.bottom)) {
+			  
+		 // Se houver sobreposição de bounds, verifica pixel a pixel
+		 return checkPixelOverlap(tokenSprite, tileSprite);
+	}
+	
+	return false;
+}
+
+function checkPixelOverlap(tokenSprite, tileSprite) {
+	// Criar canvas temporário
+	const canvas = document.createElement('canvas');
+	const ctx = canvas.getContext('2d');
+	
+	// Obter dados dos sprites
+	const tokenTexture = tokenSprite.texture;
+	const tileTexture = tileSprite.texture;
+	
+	// Configurar canvas para o tamanho necessário
+	canvas.width = Math.max(tokenTexture.width, tileTexture.width);
+	canvas.height = Math.max(tokenTexture.height, tileTexture.height);
+	
+	// Desenhar sprites no canvas
+	ctx.drawImage(tokenTexture.baseTexture.resource.source, 
+					 tokenSprite.position.x, 
+					 tokenSprite.position.y);
+					 
+	ctx.drawImage(tileTexture.baseTexture.resource.source,
+					 tileSprite.position.x,
+					 tileSprite.position.y);
+	
+	// Obter dados dos pixels
+	const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+	const pixels = imageData.data;
+	
+	// Verificar se há pixels não transparentes sobrepostos
+	for (let i = 3; i < pixels.length; i += 4) {
+		 if (pixels[i] > 0) { // Se encontrar um pixel não transparente
+			  return true;
+		 }
+	}
+	
+	return false;
+}
+
+function applyOcclusionEffects(token, tile) {
 	if (PIXI_FILTERS.has(token.id)) return;
 
-	// Create new outline filter
-	const outlineFilter = new PIXI.filters.isoOutlineFilter();
-	outlineFilter.thickness = 0.01;
-	outlineFilter.color = 0xff0000;
+	// Criar container para o efeito
+	const occlusionContainer = new PIXI.Container();
+	
+	// Criar sprite com a mesma textura do token
+	const occludedSprite = new PIXI.Sprite(token.mesh.texture.clone());
+	
+	// Criar máscara baseada na interseção
+	const mask = new PIXI.Sprite(tile.mesh.texture);
+	mask.position.x = tile.mesh.position.x - token.mesh.position.x;
+	mask.position.y = tile.mesh.position.y - token.mesh.position.y;
+	
+	// Aplicar máscara e filtros
+	occludedSprite.mask = mask;
+	occludedSprite.filters = [
+		 new PIXI.ColorMatrixFilter({
+			  matrix: [
+					0.000, 0.000, 0.000, 0.500, 0.000,
+					0.000, 0.000, 0.000, 0.500, 0.000,
+					0.000, 0.000, 0.000, 0.500, 0.000,
+					0.000, 0.000, 0.000, 1.000, 0.000
+			  ]
+		 })
+	];
+	
+	// Adicionar ao container
+	occlusionContainer.addChild(occludedSprite);
+	occlusionContainer.addChild(mask);
+	
+	// Armazenar referências
+	PIXI_FILTERS.set(token.id, {
+		 container: occlusionContainer,
+		 sprite: occludedSprite,
+		 mask: mask
+	});
+	
+	// Adicionar ao token
+	token.mesh.addChild(occlusionContainer);
+}
 
-	// Create new color matrix filter
+function removeOcclusionEffects(token) {
+	const occlusionData = PIXI_FILTERS.get(token.id);
+	if (occlusionData) {
+		 const { container, sprite, mask } = occlusionData;
+		 
+		 // Limpar recursos
+		 sprite.mask = null;
+		 sprite.filters = null;
+		 container.removeChild(sprite);
+		 container.removeChild(mask);
+		 token.mesh.removeChild(container);
+		 
+		 // Limpar texturas
+		 sprite.texture.destroy(true);
+		 mask.texture.destroy(true);
+		 
+		 PIXI_FILTERS.delete(token.id);
+	}
+}
+
+
+/*
+function checkTokenOcclusionPixels(token, tile) {
+	const tokenSprite = token.mesh;
+	const tileSprite = tile.mesh;
+	
+	// Obter as texturas
+	const tokenTexture = tokenSprite.texture;
+	const tileTexture = tileSprite.texture;
+	
+	// Criar canvas temporário para análise de pixels
+	const canvas = document.createElement('canvas');
+	const ctx = canvas.getContext('2d');
+	
+	// Converter as coordenadas do mundo para coordenadas locais
+	const tokenBounds = tokenSprite.getBounds();
+	const tileBounds = tileSprite.getBounds();
+	
+	// Área de interseção
+	const intersection = {
+		 left: Math.max(tokenBounds.left, tileBounds.left),
+		 right: Math.min(tokenBounds.right, tileBounds.right),
+		 top: Math.max(tokenBounds.top, tileBounds.top),
+		 bottom: Math.min(tokenBounds.bottom, tileBounds.bottom)
+	};
+	
+	// Se não há interseção, retorna false
+	if (intersection.left >= intersection.right || intersection.top >= intersection.bottom) {
+		 return { occluded: false, intersectionArea: null };
+	}
+	
+	// Calcular área de interseção em coordenadas relativas ao token
+	const relativeIntersection = {
+		 left: (intersection.left - tokenBounds.left) / tokenBounds.width,
+		 right: (intersection.right - tokenBounds.left) / tokenBounds.width,
+		 top: (intersection.top - tokenBounds.top) / tokenBounds.height,
+		 bottom: (intersection.bottom - tokenBounds.top) / tokenBounds.height
+	};
+	
+	return {
+		 occluded: true,
+		 intersectionArea: relativeIntersection
+	};
+}
+
+function applyOcclusionEffects(token, intersectionArea) {
+	if (!intersectionArea) return;
+	
+	// Criar um sprite mask para a área de interseção
+	const maskGraphics = new PIXI.Graphics();
+	maskGraphics.beginFill(0xffffff);
+	maskGraphics.drawRect(
+		 intersectionArea.left * token.mesh.width,
+		 intersectionArea.top * token.mesh.height,
+		 (intersectionArea.right - intersectionArea.left) * token.mesh.width,
+		 (intersectionArea.bottom - intersectionArea.top) * token.mesh.height
+	);
+	maskGraphics.endFill();
+	
+	// Criar o filtro apenas para a área mascarada
 	const colorMatrixFilter = new PIXI.ColorMatrixFilter();
 	colorMatrixFilter.alpha = 1;
 	colorMatrixFilter.matrix = [
-		0.000, 0.000, 0.000, 0.500, 0.000,
-		0.000, 0.000, 0.000, 0.500, 0.000,
-		0.000, 0.000, 0.000, 0.500, 0.000,
-		0.000, 0.000, 0.000, 1.000, 0.000
+		 0.000, 0.000, 0.000, 0.500, 0.000,
+		 0.000, 0.000, 0.000, 0.500, 0.000,
+		 0.000, 0.000, 0.000, 0.500, 0.000,
+		 0.000, 0.000, 0.000, 1.000, 0.000
 	];
-
-	// Create new alpha filter
-	const alphaFilter = new PIXI.AlphaFilter();
-	alphaFilter.alpha = 0.5;
-
-	// Store the filters
-	PIXI_FILTERS.set(token.id, [alphaFilter, outlineFilter, colorMatrixFilter]);
 	
-	// Apply filters to the token
-	const filters = token.mesh.filters || [];
-	filters.push(colorMatrixFilter, outlineFilter, alphaFilter);
-	token.mesh.filters = filters;
+	// Criar container para a área ocluída
+	const occlusionContainer = new PIXI.Container();
+	const occludedSprite = new PIXI.Sprite(token.mesh.texture);
+	occludedSprite.mask = maskGraphics;
+	occludedSprite.filters = [colorMatrixFilter];
+	
+	occlusionContainer.addChild(occludedSprite);
+	occlusionContainer.addChild(maskGraphics);
+	
+	// Armazenar referências para limpeza posterior
+	PIXI_FILTERS.set(token.id, {
+		 container: occlusionContainer,
+		 mask: maskGraphics,
+		 sprite: occludedSprite
+	});
+	
+	// Adicionar ao token
+	token.mesh.addChild(occlusionContainer);
 }
 
+function removeOcclusionEffects(token) {
+	const occlusionData = PIXI_FILTERS.get(token.id);
+	if (occlusionData) {
+		 const { container, mask, sprite } = occlusionData;
+		 
+		 // Remover elementos
+		 sprite.mask = null;
+		 container.removeChild(mask);
+		 container.removeChild(sprite);
+		 token.mesh.removeChild(container);
+		 
+		 PIXI_FILTERS.delete(token.id);
+	}
+}
+/*
 function removeOcclusionEffects(token) {
 	const filters = PIXI_FILTERS.get(token.id) || [];
 	if (filters.length) {
@@ -114,7 +327,7 @@ function removeOcclusionEffects(token) {
 		PIXI_FILTERS.delete(token.id);
 	}
 }
-
+*/
 
 
 
