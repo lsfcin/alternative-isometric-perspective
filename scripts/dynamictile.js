@@ -240,15 +240,24 @@ function cloneTileSprite(tile, wall) {
 }
 
 function cloneTokenSprite(token) {
-  const sprite = new PIXI.Sprite(token.texture);
-  sprite.position.set(token.position.x, token.position.y);
-  sprite.anchor.set(token.anchor.x, token.anchor.y);
-  sprite.angle = token.angle;
-  sprite.scale.set(token.scale.x, token.scale.y);
-  sprite.alpha = token.alpha * tokensOpacity;
-  sprite.eventMode = 'passive';
-  sprite.originalToken = token;
-  return sprite;
+  if (!token || !token.texture) {
+    if (game.settings.get(MODULE_ID, "debug")) { console.warn("Dynamic Tile cloneTokenSprite() common error.") }
+    return null;
+  }
+  try {
+    const sprite = new PIXI.Sprite(token.texture);
+    sprite.position.set(token.position.x, token.position.y);
+    sprite.anchor.set(token.anchor.x, token.anchor.y);
+    sprite.angle = token.angle;
+    sprite.scale.set(token.scale.x, token.scale.y);
+    sprite.alpha = token.alpha * tokensOpacity;
+    sprite.eventMode = 'passive';
+    sprite.originalToken = token;
+    return sprite;
+  } catch (error) {
+    console.error("Erro ao clonar sprite do token:", error);
+    return null;
+  }
 }
 
 // Função para encontrar o token inicial na inicialização
@@ -308,12 +317,14 @@ function updateAlwaysVisibleElements() {
 
   // Adiciona sempre o token controlado
   const controlledTokenSprite = cloneTokenSprite(controlled.mesh);
-  tokensLayer.addChild(controlledTokenSprite);
+  if (controlledTokenSprite) {  // Verifica se o sprite foi criado com sucesso
+    tokensLayer.addChild(controlledTokenSprite);
+  }
 
   // Adiciona tokens que o token controlado pode ver
   canvas.tokens.placeables.forEach(token => {
-    // Pula o token controlado (já foi adicionado)
-    if (token.id === controlled.id) return;
+    if (!token.mesh) return;  // Pula se o mesh não existir
+    if (token.id === controlled.id) return; // Pula o token controlado (já foi adicionado)
 
     // Verifica se o token pode ser visto
     if (canTokenSeeToken(controlled, token)) {
