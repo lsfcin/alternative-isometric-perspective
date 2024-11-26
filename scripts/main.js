@@ -9,13 +9,13 @@ import { applyIsometricPerspective, applyBackgroundTransformation } from './tran
 
 // ---------- CONSTANTS ----------
 const MODULE_ID = "isometric-perspective";
-export { MODULE_ID };
-
 let DEBUG_PRINT;
-export { DEBUG_PRINT };
-
 let WORLD_ISO_FLAG;
+
+export { MODULE_ID };
+export { DEBUG_PRINT };
 export { WORLD_ISO_FLAG };
+
 
 
 Hooks.once("init", function() {
