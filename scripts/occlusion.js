@@ -1,3 +1,5 @@
+// ORIGINAL
+
 // export all functions to main.js
 export function registerOcclusionConfig() {
 	/*
@@ -26,6 +28,163 @@ const PIXI_FILTERS = new Map();
 
 // Funções principais
 function processAllTokens() {
+	canvas.tokens.placeables.forEach(function(token) {
+		processTokenOcclusion(token);
+	});
+}
+
+function handleTokenDocument(tokenDoc) {
+	processTokenOcclusion(tokenDoc.object);
+}
+
+function processTokenOcclusion(token) {
+	if (!token?.mesh) return;
+
+	// Check if token is occluded by any tiles
+	const isOccluded = checkTokenOcclusion(token);
+	if (isOccluded) {
+		applyOcclusionEffects(token);
+	} else {
+		removeOcclusionEffects(token);
+	}
+}
+
+
+
+
+
+
+function checkTokenOcclusion(token) {
+	// Get all tiles that might occlude the token
+	const tiles = canvas.tiles.placeables.filter(function(tile) {
+		// Only check tiles with occlusion enabled
+		return tile.document.occlusion?.mode !== CONST.TILE_OCCLUSION_MODES.NONE;
+	});
+
+	// Check if any tile occludes the token
+	return tiles.some(function(tile) {
+		// Get the real dimensions of the token and tile sprite after transformations
+		const tokenBounds = token.mesh.getBounds();
+		const tileBounds = tile.mesh.getBounds();
+
+		// Check intersection using the transformed dimensions
+		return !(tokenBounds.right < tileBounds.left ||
+			tokenBounds.left > tileBounds.right ||
+			tokenBounds.bottom < tileBounds.top ||
+			tokenBounds.top > tileBounds.bottom);
+	});
+}
+
+function applyOcclusionEffects(token) {
+	if (PIXI_FILTERS.has(token.id)) return;
+
+	// Create new outline filter
+	const outlineFilter = new PIXI.filters.isoOutlineFilter();
+	outlineFilter.thickness = 0.01;
+	outlineFilter.color = 0xff0000;
+
+	// Create new color matrix filter
+	const colorMatrixFilter = new PIXI.ColorMatrixFilter();
+	colorMatrixFilter.alpha = 1;
+	colorMatrixFilter.matrix = [
+		0.000, 0.000, 0.000, 0.500, 0.000,
+		0.000, 0.000, 0.000, 0.500, 0.000,
+		0.000, 0.000, 0.000, 0.500, 0.000,
+		0.000, 0.000, 0.000, 1.000, 0.000
+	];
+
+	// Create new alpha filter
+	const alphaFilter = new PIXI.AlphaFilter();
+	alphaFilter.alpha = 0.5;
+
+	// Store the filters
+	PIXI_FILTERS.set(token.id, [alphaFilter, outlineFilter, colorMatrixFilter]);
+	
+	// Apply filters to the token
+	const filters = token.mesh.filters || [];
+	filters.push(colorMatrixFilter, outlineFilter, alphaFilter);
+	token.mesh.filters = filters;
+}
+
+function removeOcclusionEffects(token) {
+	const filters = PIXI_FILTERS.get(token.id) || [];
+	if (filters.length) {
+		// Remove the filters
+		token.mesh.filters = (token.mesh.filters || []).filter(function(f) {
+			return !filters.includes(f);
+		});
+		PIXI_FILTERS.delete(token.id);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+// export all functions to main.js
+export function registerOcclusionConfig() {
+	
+	//const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+	//const enableOcclusionTokenSilhouette = game.settings.get(MODULE_ID, "enableOcclusionTokenSilhouette");
+	//if (!isometricWorldEnabled || !enableOcclusionTokenSilhouette) return;
+	
+	 
+	Hooks.on('createToken',  handleTokenDocument);
+	Hooks.on('updateToken',  handleTokenDocument);
+	Hooks.on('refreshToken', processTokenOcclusion);
+	Hooks.on('deleteToken', function(tokenDoc) {
+		PIXI_FILTERS.delete(tokenDoc.id);
+	});
+
+	Hooks.on('updateTile',   processAllTokens);
+	Hooks.on('refreshTile',  processAllTokens);
+
+	Hooks.on('canvasReady',  processAllTokens);
+	Hooks.on('canvasPan',    processAllTokens);
+
+}
+
+// Mapa global para armazenar os filtros PIXI
+//const PIXI_FILTERS = new Map();
+
+// Funções principais
+function processAllTokens() {
 	// Em vez de processar todos os tokens, vamos verificar cada token individualmente
 	canvas.tokens.placeables.forEach(token => {
 		 // Verificar se o token realmente precisa do efeito
@@ -40,7 +199,7 @@ function handleTokenDocument(tokenDoc) {
 	processTokenOcclusion(tokenDoc.object);
 }
 
-/*
+
 function processTokenOcclusion(token) {
 	if (!token?.mesh) return;
 
@@ -52,7 +211,7 @@ function processTokenOcclusion(token) {
 		removeOcclusionEffects(token);
 	}
 }
-*/
+
 
 function processTokenOcclusion(token) {
 	if (!token?.mesh) return;
@@ -214,7 +373,7 @@ function removeOcclusionEffects(token) {
 }
 
 
-/*
+
 function checkTokenOcclusionPixels(token, tile) {
 	const tokenSprite = token.mesh;
 	const tileSprite = tile.mesh;
@@ -316,7 +475,7 @@ function removeOcclusionEffects(token) {
 		 PIXI_FILTERS.delete(token.id);
 	}
 }
-/*
+
 function removeOcclusionEffects(token) {
 	const filters = PIXI_FILTERS.get(token.id) || [];
 	if (filters.length) {

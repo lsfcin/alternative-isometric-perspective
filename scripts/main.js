@@ -4,13 +4,12 @@ import { registerTileConfig } from './tile.js';
 import { registerHUDConfig } from './hud.js';
 import { registerOcclusionConfig } from './occlusion.js';
 import { registerDynamicTileConfig, increaseTilesOpacity, decreaseTilesOpacity } from './dynamictile.js';
-//import { TokenEffectModule } from './occlusion.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
 const MODULE_ID = "isometric-perspective";
 export { MODULE_ID };
 
-// Hook para registrar a configuração do módulo no Foundry VTT
+
 Hooks.once("init", function() {
   
   // ------------- Registra as configurações do módulo ------------- 
@@ -177,88 +176,458 @@ Hooks.on("canvasResize", (canvas) => {
  * @param {----- TESTING AREA / ÁREA DE TESTES -----}
 */
 
-/*
-// Adicionar botões personalizados na barra de ferramentas lateral
-Hooks.on("getSceneControlButtons", (controls) => {
-  // Encontre o grupo onde você quer adicionar o botão, ou crie um novo grupo
-  controls.push({
-    name: "custom-tools",
-    title: "Ferramentas Customizadas",
-    icon: "fas fa-tools", // Ícone do Font Awesome
-    layer: "TokenLayer",
-    tools: [
-      {
-        name: "botao1",
-        title: "Botão 1",
-        icon: "fas fa-dice-d20", // Ícone do Font Awesome
-        onClick: () => {
-          ui.notifications.info("Botão 1 clicado!");
-        },
-        button: true,
-      },
-      {
-        name: "botao2",
-        title: "Botão 2",
-        icon: "fas fa-magic", // Ícone do Font Awesome
-        onClick: () => {
-          ui.notifications.info("Botão 2 clicado!");
-        },
-        button: true,
-      },
-      {
-        name: "botao3",
-        title: "Botão 3",
-        icon: "fas fa-book", // Ícone do Font Awesome
-        onClick: () => {
-          ui.notifications.info("Botão 3 clicado!");
-        },
-        button: true,
-      }
-    ]
-  });
 
+/*
+// Função para criar a máscara de sobreposição
+function createOverlayMask(baseObject, overlappingObject) {
+  // Obter os bounds dos objetos
+  const baseBounds = baseObject.bounds;
+  const overlapBounds = overlappingObject.bounds;
+
+  // Verificar se há sobreposição
+  if (!baseBounds.intersects(overlapBounds)) return null;
+  
+  // Criar o container para a máscara
+  const maskContainer = new PIXI.Container();
+
+  // Criar sprite para o baseObject
+  const baseSprite = new PIXI.Sprite(baseObject.texture);
+  baseSprite.position.set(baseBounds.x, baseBounds.y);
+
+  // Extrair a máscara baseada nos pixels não transparentes do overlappingObject
+  const texture = overlappingObject.texture;
+  const bitmap = texture.baseTexture.resource.source;
+
+  // Criar um canvas para processar os dados de transparência da textura
+  const canvas = document.createElement('canvas');
+  canvas.width = texture.width;
+  canvas.height = texture.height;
+  const context = canvas.getContext('2d');
+  
+  // Desenhar a textura do token no canvas para analisar os pixels
+  context.drawImage(bitmap, 0, 0);
+  
+  // Obter os dados dos pixels (imagem bruta)
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const pixels = imageData.data;
+  console.log(pixels);
+
+  // Criar a máscara com base nos pixels não transparentes
+  const maskGraphics = new PIXI.Graphics();
+  maskGraphics.beginFill(0xffffff);
+
+  // Iterar sobre os pixels da textura e identificar áreas não transparentes
+  for (let y = 0; y < texture.height; y++) {
+    for (let x = 0; x < texture.width; x++) {
+      const index = (y * texture.width + x) * 4;
+      const alpha = pixels[index + 3]; // Canal alpha
+      if (alpha > 0) {
+        // Se o pixel não for transparente, desenha na máscara
+        maskGraphics.drawRect(x, y, 1, 1);
+      }
+    }
+  }
+
+  maskGraphics.endFill();
+
+  // Aplicar a máscara ao sprite
+  baseSprite.mask = maskGraphics;
+
+  // Criar filtro azul (filtro ColorMatrix)
+  const blueOverlayFilter = new PIXI.ColorMatrixFilter();
+  blueOverlayFilter.matrix = [
+    0, 0, 0, 0, 0,    // Vermelho
+    0, 0, 0.5, 0, 0,  // Verde
+    0, 0, 1, 0, 0,    // Azul
+    0, 0, 0, 1, 0     // Alpha
+  ];
+  baseSprite.filters = [blueOverlayFilter];
+
+  // Adicionar o sprite e a máscara ao container
+  maskContainer.addChild(baseSprite);
+  maskContainer.addChild(maskGraphics);
+
+  return maskContainer;
+}
+
+// Função para atualizar a camada de sobreposição
+function updateOverlayLayer() {
+  // Remover a camada de sobreposição existente
+  if (canvas.overlayLayer) {
+    canvas.overlayLayer.removeChildren();
+  } else {
+    // Criar a camada de sobreposição se não existir
+    canvas.overlayLayer = canvas.stage.addChildAt(new PIXI.Container(), canvas.stage.children.length);
+  }
+
+  // Obter todos os tiles e tokens no canvas
+  const tiles = canvas.tiles.placeables;
+  const tokens = canvas.tokens.placeables;
+  
+  // Verificar sobreposições entre tiles e tokens
+  for (const tile of tiles) {
+    for (const token of tokens) {
+      const overlayMask = createOverlayMask(tile, token);
+      if (overlayMask) {
+        canvas.overlayLayer.addChild(overlayMask);
+      }
+    }
+  }
+}
+
+Hooks.on('canvasReady', updateOverlayLayer);
+Hooks.on('updateToken', (document, changes, options) => { updateOverlayLayer() });
+Hooks.on('updateTile', (document, changes, options) => { updateOverlayLayer() });
+
+Hooks.on('init', () => { console.log('Overlay Layer Module | Inicializado') });
+
+// Registrar hooks para atualização da camada de sobreposição
+Hooks.on('canvasInit', () => {
+  if (!canvas.overlayLayer) { // Garantir que a camada de sobreposição seja criada durante a inicialização do canvas
+    canvas.overlayLayer = canvas.stage.addChildAt(new PIXI.Container(), canvas.stage.children.length);
+  }
+});
+
+
+
+
+
+/*
+blueOverlayFilter.alpha = 1;
+blueOverlayFilter.matrix = [
+  0, 0, 0, 0.5, 0,
+  0, 0, 0, 0.5, 0,
+  0, 0, 0, 0.5, 0,
+  0, 0, 0,   1, 0
+];
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+class OverlayCanvasLayer extends CanvasLayer {
+  constructor() {
+      super();
+      this.overlayContainer = new PIXI.Container();
+      this.addChild(this.overlayContainer);
+      this.overlaySprites = new Map();
+  }
+
+  // Cria ou atualiza o sprite de sobreposição para um elemento
+  createOrUpdateOverlay(element, type) {
+      const key = `${type}_${element.id}`;
+      let sprite = this.overlaySprites.get(key);
+
+      // Cria novo sprite se não existir
+      if (!sprite) {
+          sprite = new PIXI.Sprite(element.texture);
+          this.overlayContainer.addChild(sprite);
+          this.overlaySprites.set(key, sprite);
+      }
+
+      // Atualiza posição e propriedades do sprite
+      sprite.position.set(element.x, element.y);
+      sprite.width = element.width;
+      sprite.height = element.height;
+
+      return sprite;
+  }
+
+  // Verifica sobreposição considerando pixels transparentes
+  checkPixelOverlap(sprite1, sprite2) {
+      // Verifica dimensões válidas
+      if (!sprite1 || !sprite2 || 
+          sprite1.width <= 0 || sprite1.height <= 0 || 
+          sprite2.width <= 0 || sprite2.height <= 0) {
+          return false;
+      }
+
+      try {
+          // Converte sprites para renderTextures para processamento de pixel
+          const renderTexture1 = PIXI.RenderTexture.create({
+              width: Math.floor(sprite1.width),
+              height: Math.floor(sprite1.height)
+          });
+          const renderTexture2 = PIXI.RenderTexture.create({
+              width: Math.floor(sprite2.width),
+              height: Math.floor(sprite2.height)
+          });
+
+          const renderer = canvas.app.renderer;
+          renderer.render(sprite1, { renderTexture: renderTexture1 });
+          renderer.render(sprite2, { renderTexture: renderTexture2 });
+
+          // Obtém dados de pixel
+          const pixels1 = renderer.plugins.extract.pixels(renderTexture1);
+          const pixels2 = renderer.plugins.extract.pixels(renderTexture2);
+
+          // Libera recursos
+          renderTexture1.destroy(true);
+          renderTexture2.destroy(true);
+
+          // Verifica sobreposição de pixels não transparentes
+          for (let y = 0; y < Math.min(sprite1.height, sprite2.height); y++) {
+              for (let x = 0; x < Math.min(sprite1.width, sprite2.width); x++) {
+                  const index1 = (y * Math.floor(sprite1.width) + x) * 4;
+                  const index2 = (y * Math.floor(sprite2.width) + x) * 4;
+
+                  // Verifica se ambos os pixels têm alfa > 0 (não transparentes)
+                  if (pixels1[index1 + 3] > 0 && pixels2[index2 + 3] > 0) {
+                      return true;
+                  }
+              }
+          }
+
+          return false;
+      } catch (error) {
+          console.error('Erro na verificação de sobreposição de pixels:', error);
+          return false;
+      }
+  }
+
+  // Aplica filtro de sobreposição azul quando tokens sobrepõem tiles
+  checkAndApplyOverlay() {
+      const tiles = canvas.tiles.placeables;
+      const tokens = canvas.tokens.placeables;
+
+      tiles.forEach(tile => {
+          // Verifica se o tile é válido e tem dimensões
+          if (!tile || !tile.texture) return;
+
+          const tileSprite = this.createOrUpdateOverlay(tile, 'tile');
+          
+          tokens.forEach(token => {
+              // Verifica se o token é válido e tem dimensões
+              if (!token || !token.texture) return;
+
+              const tokenSprite = this.createOrUpdateOverlay(token, 'token');
+              
+              // Verifica sobreposição considerando transparência
+              if (this.checkPixelOverlap(tileSprite, tokenSprite)) {
+                  const blueOverlayFilter = new PIXI.filters.ColorMatrixFilter();
+                  blueOverlayFilter.alpha = 1;
+                  blueOverlayFilter.matrix = [
+                    0, 0, 0, 0.5, 0,
+                    0, 0, 0, 0.5, 0,
+                    0, 0, 0, 0.5, 0,
+                    0, 0, 0,   1, 0
+                  ];
+                  //blueOverlayFilter.blue(1.5); // Ajuste a intensidade conforme necessário
+                  tokenSprite.filters = [blueOverlayFilter];
+              } else {
+                  tokenSprite.filters = [];
+              }
+          });
+      });
+  }
+
+  // Registra listeners para atualizações
+  registerListeners() {
+      Hooks.on('updateToken', () => this.checkAndApplyOverlay());
+      Hooks.on('updateTile', () => this.checkAndApplyOverlay());
+      Hooks.on('canvasPan', () => this.checkAndApplyOverlay());
+      Hooks.on('refreshToken', () => this.checkAndApplyOverlay());
+      Hooks.on('refreshTile', () => this.checkAndApplyOverlay());
+  }
+}
+
+// Inicialização da camada customizada
+Hooks.on('canvasInit', () => {
+  canvas.overlayLayer = canvas.stage.addChild(new OverlayCanvasLayer());
+  canvas.overlayLayer.registerListeners();
 });
 */
 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
-,
-  {
-    name: "dtaligntool", // just some identifier
-    title: "coisina",  // more like the label shown in the tooltip
-    icon: "fa fa-circle",  // a FontAwesome icon to show
-    visible: game.user.isGM,  // whether to show the control or not, a boolean or a function that returns a boolean
-    onClick: () => {
-      console.log("geag");
-    },
-    button: true  // just being explicit that it should be a button rather than a toggle
-  },{
-    name: 'select-templates',
-    title: 'Select Templates',
-    icon: 'fa-solid fa-layer-group',
-    toggle: true,
-    active: true,
-    onClick: (toggle) => {
-      if (toggle) {
-        console.log("template sim");
-      } else {
-        console.log("template não");
+function createOverlayLayer() {
+  const sprites = new Map();
+
+  function updateSpriteForDocument(document) {
+      const existingSprite = sprites.get(document.id);
+      if (existingSprite) {
+          canvas.overlayLayer.removeChild(existingSprite);
+          sprites.delete(document.id);
       }
-    }
-  },{
-    name: 'select-templates',
-    title: 'Toggle',
-    icon: 'fa-solid fa-eye-low-vision',
-    active: true,
-    onClick: () => {
-      if (active) {
-        console.warn("ok");
-      } else {
-        console.warn("not ok");
+
+      const sourceSprite = document.object.sprite;
+      if (!sourceSprite) return;
+
+      const overlaySprite = new PIXI.Sprite(sourceSprite.texture);
+      overlaySprite.position.copyFrom(sourceSprite.position);
+      overlaySprite.anchor.copyFrom(sourceSprite.anchor);
+      overlaySprite.width = sourceSprite.width;
+      overlaySprite.height = sourceSprite.height;
+
+      const blueOverlay = new PIXI.filters.ColorMatrixFilter();
+      blueOverlay.tint = 0x0000FF;
+      blueOverlay.brightness(0.8);
+
+      const isOverlapped = canvas.tokens.placeables.some(token => 
+          checkSpriteOverlap(overlaySprite, token.sprite)
+      );
+
+      if (isOverlapped) {
+          overlaySprite.filters = [blueOverlay];
       }
-    },
-    button: true
+
+      canvas.overlayLayer.addChild(overlaySprite);
+      sprites.set(document.id, overlaySprite);
   }
+
+  function checkSpriteOverlap(sprite1, sprite2) {
+      const bounds1 = sprite1.getBounds();
+      const bounds2 = sprite2.getBounds();
+      return !(
+          bounds1.right < bounds2.left || 
+          bounds1.left > bounds2.right || 
+          bounds1.bottom < bounds2.top || 
+          bounds1.top > bounds2.bottom
+      );
+  }
+
+  function initOverlayLayer() {
+      canvas.overlayLayer = canvas.stage.addChild(new PIXI.Container());
+      
+      Hooks.on('updateTile', updateSpriteForDocument);
+      Hooks.on('updateToken', updateSpriteForDocument);
+  }
+
+  Hooks.once('canvasReady', initOverlayLayer);
+}
+
+Hooks.once('init', createOverlayLayer);
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+// Registra o hook para quando um token se move
+Hooks.on("updateToken", async (token, changes) => {
+  // Verifica se houve mudança na posição
+  if (!changes.x && !changes.y) return;
+  
+  // Obtém a cena atual
+  const scene = game.scenes.current;
+  if (!scene) return;
+  
+  // Obtém o token atualizado
+  const tokenDoc = scene.tokens.get(token.id);
+  const tokenSprite = tokenDoc.object;
+  
+  // Obtém todos os tiles da cena
+  const tiles = scene.tiles.contents;
+  console.log(tiles);
+
+  // Variável para controlar se o token está tocando algum tile
+  let isTouching = false;
+  
+  // Para cada tile, verifica sobreposição
+  for (const tile of tiles) {
+    const tileSprite = tile.object;
+    
+    // Verifica sobreposição básica de bounds primeiro (otimização)
+    if (checkBoundsOverlap(tokenSprite, tileSprite)) {
+        // Se houver sobreposição de bounds, verifica pixel por pixel
+        //const hasPixelOverlap = await checkPixelOverlap(tokenSprite, tileSprite);
+        
+        //if (hasPixelOverlap) {
+        //    console.log(`Token "${tokenDoc.name}" está sobreposto com o tile ID: ${tile.id}`);
+        //}
+      isTouching = true;
+      break; // Se já encontrou um tile tocando, não precisa continuar
+    }
+  }
+  // Envia a mensagem apenas se o token estiver tocando algum tile
+  if (isTouching) {
+    console.log(`Token "${tokenDoc.name}" está tocando um tile.`);
+  } else {
+    console.log(`Token "${tokenDoc.name}" NÃO está tocando nenhum tile.`);
+  }
+});
+
+// Função para verificar sobreposição básica de bounds
+function checkBoundsOverlap(token, tile) {
+  const tokenSprite = token.mesh;
+	const tileSprite = tile.mesh;
+	
+	// Primeiro faz uma verificação rápida de bounds
+	const tokenBounds = tokenSprite.getBounds();
+	const tileBounds = tileSprite.getBounds();
+  
+  return !(tokenBounds.left > tileBounds.right ||
+           tokenBounds.right < tileBounds.left ||
+           tokenBounds.top > tileBounds.bottom ||
+           tokenBounds.bottom < tileBounds.top);
+}
 */
