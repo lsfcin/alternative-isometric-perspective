@@ -1,10 +1,9 @@
-import { MODULE_ID } from './main.js';
+import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 
 export function registerDynamicTileConfig() {
-  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
-  const enableOcclusionDynamicTile = game.settings.get(MODULE_ID, "enableOcclusionDynamicTile");
   //const isometricEnabled = game.settings.get(MODULE_ID, "isometricEnabled");
-  if (!isometricWorldEnabled || !enableOcclusionDynamicTile) return;
+  const enableOcclusionDynamicTile = game.settings.get(MODULE_ID, "enableOcclusionDynamicTile");
+  if (!WORLD_ISO_FLAG || !enableOcclusionDynamicTile) return;
   //if (!isometricWorldEnabled || !enableOcclusionDynamicTile || !isometricEnabled) return;
 
   // ---------------------- CANVAS ----------------------
@@ -241,7 +240,7 @@ function cloneTileSprite(tile, wall) {
 
 function cloneTokenSprite(token) {
   if (!token || !token.texture) {
-    if (game.settings.get(MODULE_ID, "debug")) { console.warn("Dynamic Tile cloneTokenSprite() common error.") }
+    if (DEBUG_PRINT) { console.warn("Dynamic Tile cloneTokenSprite() common error.") }
     return null;
   }
   try {

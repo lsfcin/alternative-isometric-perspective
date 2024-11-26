@@ -1,4 +1,4 @@
-import { MODULE_ID } from './main.js';
+import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 
 
 export function registerHUDConfig() {
@@ -9,9 +9,8 @@ export function registerHUDConfig() {
 function handleRenderTokenHUD(hud, html, data) {
   const scene = game.scenes.current;
   const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
 
-  if (isometricWorldEnabled && isSceneIsometric) {
+  if (WORLD_ISO_FLAG && isSceneIsometric) {
     requestAnimationFrame(() => adjustHUDPosition(hud, html));
   }
 }
@@ -19,9 +18,8 @@ function handleRenderTokenHUD(hud, html, data) {
 function handleRenderTileHUD(hud, html, data) {
   const scene = game.scenes.current;
   const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
-  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
 
-  if (isometricWorldEnabled && isSceneIsometric) {
+  if (WORLD_ISO_FLAG && isSceneIsometric) {
     requestAnimationFrame(() => adjustHUDPosition(hud, html));
   }
 }

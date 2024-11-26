@@ -6,8 +6,16 @@ import { registerOcclusionConfig } from './occlusion.js';
 import { registerDynamicTileConfig, increaseTilesOpacity, decreaseTilesOpacity } from './dynamictile.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
+
+// ---------- CONSTANTS ----------
 const MODULE_ID = "isometric-perspective";
 export { MODULE_ID };
+
+let DEBUG_PRINT;
+export { DEBUG_PRINT };
+
+let WORLD_ISO_FLAG;
+export { WORLD_ISO_FLAG };
 
 
 Hooks.once("init", function() {
@@ -131,6 +139,20 @@ Hooks.once("init", function() {
   registerDynamicTileConfig();
   //registerOcclusionConfig();
 
+  
+  
+  
+  
+  
+  // Define global debug print variable
+  if (game.settings.get(MODULE_ID, "debug"))
+    DEBUG_PRINT = true;
+  else DEBUG_PRINT = false;
+
+  if (game.settings.get(MODULE_ID, "worldIsometricFlag"))
+    WORLD_ISO_FLAG = true;
+  else WORLD_ISO_FLAG = false;
+  
 });
 
 
@@ -145,6 +167,9 @@ Hooks.on("canvasReady", (canvas) => {
   const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
   applyIsometricPerspective(scene, isSceneIsometric);
   applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
+  
+  // debug print
+  if (DEBUG_PRINT) console.log("Hooks.on canvasReady");
 });
 
 
@@ -160,6 +185,9 @@ Hooks.on("canvasResize", (canvas) => {
   if (isSceneIsometric && shouldTransformBackground) {
     applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
   }
+  
+  // debug print
+  if (DEBUG_PRINT) console.log("Hooks.on canvasResize");
 });
 
 

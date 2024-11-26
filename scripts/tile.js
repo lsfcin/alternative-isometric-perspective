@@ -1,4 +1,4 @@
-import { MODULE_ID } from './main.js';
+import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 import { applyIsometricTransformation } from './transform.js';
 
 export function registerTileConfig() {
