@@ -3,6 +3,7 @@ import { registerTokenConfig } from './token.js';
 import { registerTileConfig } from './tile.js';
 import { registerHUDConfig } from './hud.js';
 import { registerOcclusionConfig } from './occlusion.js';
+import { registerSortingConfig } from './autosorting.js';
 import { registerDynamicTileConfig, increaseTilesOpacity, decreaseTilesOpacity } from './dynamictile.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
 
@@ -56,6 +57,16 @@ Hooks.once("init", function() {
   game.settings.register(MODULE_ID, 'enableOcclusionDynamicTile', {
     name: 'Enable Occlusion: Dynamic Tile',
     hint: '(BETA FEATURE. USE WITH CAUTION) Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
+    scope: 'world',
+    config: true,
+    default: false,
+    type: Boolean,
+    requiresReload: true
+  });
+
+  game.settings.register(MODULE_ID, 'enableAutoSorting', {
+    name: 'Enable Automatic Token Sorting',
+    hint: '(BETA FEATURE. USE WITH CAUTION) Automatically adjusts the token\'s sort property value when moving it around the canvas.',
     scope: 'world',
     config: true,
     default: false,
@@ -137,6 +148,7 @@ Hooks.once("init", function() {
 
   // ------------- Executa os hooks de funcionalidades adicionais do módulo -------------
   registerDynamicTileConfig();
+  registerSortingConfig();
   //registerOcclusionConfig();
 
   

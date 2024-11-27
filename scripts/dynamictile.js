@@ -1,11 +1,11 @@
 import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 
 export function registerDynamicTileConfig() {
-  //const isometricEnabled = game.settings.get(MODULE_ID, "isometricEnabled");
   const enableOcclusionDynamicTile = game.settings.get(MODULE_ID, "enableOcclusionDynamicTile");
-  if (!WORLD_ISO_FLAG || !enableOcclusionDynamicTile) return;
-  //if (!isometricWorldEnabled || !enableOcclusionDynamicTile || !isometricEnabled) return;
-
+  const worldIsometricFlag = game.settings.get(MODULE_ID, "worldIsometricFlag");
+  
+  if (!worldIsometricFlag || !enableOcclusionDynamicTile) return;
+  
   // ---------------------- CANVAS ----------------------
   Hooks.on('canvasInit', () => {
     // Remove any existing container if it exists

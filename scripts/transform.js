@@ -44,11 +44,11 @@ Earthbound / Paperboy
 
 // Função principal que muda o canvas da cena
 export function applyIsometricPerspective(scene, isSceneIsometric) {
-  //const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   //const isoAngle = ISOMETRIC_TRUE_ROTATION;
   //const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
   
-  if (WORLD_ISO_FLAG && isSceneIsometric) {
+  if (isometricWorldEnabled && isSceneIsometric) {
     canvas.app.stage.rotation = ISOMETRIC_CONST.rotation;
     canvas.app.stage.skew.set(ISOMETRIC_CONST.skewX, ISOMETRIC_CONST.skewY);
     adjustAllTokensAndTilesForIsometric();
@@ -82,7 +82,7 @@ export function applyTokenTransformation(token, isSceneIsometric) {
 
 // Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
 export function applyIsometricTransformation(object, isSceneIsometric) {
-  //const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   //let reverseTransform = object.document.getFlag(MODULE_ID, "reverseTransform") ?? false;
   
   if (!object.mesh) {
@@ -98,7 +98,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 
   
 
-  if (WORLD_ISO_FLAG && isSceneIsometric) { // && !reverseTransform
+  if (isometricWorldEnabled && isSceneIsometric) { // && !reverseTransform
     // desfaz rotação e deformação
     object.mesh.rotation = Math.PI/4;
     object.mesh.skew.set(0, 0);
@@ -272,10 +272,10 @@ export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTra
   //const background = scene.stage.background;
 
   const background = canvas.environment.primary.background;
-  //const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
   
-  if (WORLD_ISO_FLAG && isSceneIsometric && shouldTransform) {
+  if (isometricWorldEnabled && isSceneIsometric && shouldTransform) {
     // Aplica rotação isométrica
     background.rotation = Math.PI/4;
     background.skew.set(0, 0);
