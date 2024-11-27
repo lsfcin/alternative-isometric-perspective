@@ -45,24 +45,19 @@ export function registerSortingConfig() {
 
 }
 
-
-
-
-
 function calculateTokenSortValue(token) {
-  const scene = game.scenes.active;
-  if (!scene) return token.sort;
+  const dimensions = canvas.scene.dimensions;
 
-  // Gets the dimensions of the canvas
-  const { width, height } = scene;
+  const { width, height } = dimensions;
 
-  // Calculates the sort value using the X+Y method. Those are all methods to prioritize each corner (but the only who matter to isometric is south).
-  return Math.floor((width - token.x) + token.y);                // South
-  //return Math.floor(token.x + (height - token.y));             // North
-  //return Math.floor(token.x + token.y);                        // East
-  //return Math.floor((width - token.x) + (height - token.y));   // West
+  // invert the x because the co-ordinate system doesn't match our intuition for "closer to the screen"
+  const tokenX = width - token.x;
+  const tokenY = token.y;
+
+  const sortValue = Math.round(((tokenX + tokenY) / (width + height)) * 10000);
+
+  return sortValue;
 }
-
 
 async function updateTokenSort(token) {
   const scene = game.scenes.active;
