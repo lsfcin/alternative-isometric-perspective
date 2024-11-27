@@ -101,4 +101,19 @@ Hooks.on('getSceneControlButtons', (controls) => {
     button: true
   });
 });
+
+// my old code, just for backup reasons
+function calculateTokenSortValue(token) {
+  const scene = game.scenes.active;
+  if (!scene) return token.sort;
+
+  // Gets the dimensions of the canvas
+  const { width, height } = scene;
+
+  // Calculates the sort value using the X+Y method. Those are all methods to prioritize each corner (but the only who matter to isometric is south).
+  return Math.floor((width - token.x) + token.y);                // South
+  //return Math.floor(token.x + (height - token.y));             // North
+  //return Math.floor(token.x + token.y);                        // East
+  //return Math.floor((width - token.x) + (height - token.y));   // West
+}
 */
