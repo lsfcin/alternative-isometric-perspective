@@ -29,6 +29,7 @@ async function handleRenderTokenConfig(app, html, data) {
   lastTab.after(tabHtml);
 
   // keeps the window height on auto
+  /*
   const sheet = html.closest('.sheet');
   if (sheet.length) {
     sheet.css({ 'height': 'auto', 'min-height': '0' });
@@ -37,6 +38,7 @@ async function handleRenderTokenConfig(app, html, data) {
       windowContent.css({ 'height': 'auto', 'overflow': 'visible' });
     }
   }
+  */
 
   // Inicializa os valores dos controles
   const isoTokenCheckbox = html.find('input[name="flags.isometric-perspective.isoTokenDisabled"]');

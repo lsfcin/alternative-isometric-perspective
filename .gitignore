@@ -5,7 +5,6 @@ Thumbs.db
 # Editores
 .vscode/
 .idea/
-.github/
 *.swp
 *.swo
 

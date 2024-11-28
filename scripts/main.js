@@ -6,6 +6,7 @@ import { registerOcclusionConfig } from './occlusion.js';
 import { registerSortingConfig } from './autosorting.js';
 import { registerDynamicTileConfig, increaseTilesOpacity, decreaseTilesOpacity } from './dynamictile.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
+import { cartesianToIso } from './utils.js';
 
 
 // ---------- CONSTANTS ----------
@@ -215,6 +216,224 @@ Hooks.on("canvasResize", (canvas) => {
 /**
  * @param {----- TESTING AREA / ÁREA DE TESTES -----}
 */
+
+
+/*
+// Registra o hook para quando um token se move
+Hooks.on("updateToken", async (token, changes) => {
+  // Verifica se houve mudança na posição
+  if (!changes.x && !changes.y) return;
+  
+  // Obtém a cena atual
+  const scene = game.scenes.current;
+  if (!scene) return;
+  
+  
+  
+  // Wait for the movement animation to complete -----------------------------------------------------------------------------------------
+  // Wait for the movement animation to complete -----------------------------------------------------------------------------------------
+  // Wait for the movement animation to complete -----------------------------------------------------------------------------------------
+  // Wait for the movement animation to complete -----------------------------------------------------------------------------------------
+  //const token = tokenSprite.document
+  const anim = CanvasAnimation.getAnimation(token.animationName);
+  if(anim?.promise) await anim.promise;
+
+
+
+  
+  // Obtém o token atualizado
+  const tokenDoc = scene.tokens.get(token.id);
+  const tokenSprite = tokenDoc.object;
+  
+  // Obtém todos os tiles da cena
+  const tiles = scene.tiles.contents;
+  
+  // Variável para controlar se o token está tocando algum tile
+  let touchedTiles = [];
+  
+  // Para cada tile, verifica sobreposição
+  for (const tile of tiles) {
+    const tileSprite = tile.object;
+    
+    if (checkBoundsOverlap(tokenSprite, tileSprite)) {
+      console.log(`Token "${tokenDoc.name}" está sobreposto com o tile ID: ${tile.id}`);
+      touchedTiles.push(tile);
+    }
+  }
+
+  // Remove máscara anterior se existir
+  removeOcclusionMask(scene);
+
+  // Se houver tiles tocados, cria a máscara de oclusão
+  if (touchedTiles.length > 0) {
+    // Cor da máscara pode ser ajustada aqui (no formato hexadecimal)
+    const maskColor = 0xFF00F0;  // Vermelho como padrão, mas pode ser modificado
+    const maskAlpha = 0.5;  // Opacidade (0-1)
+    
+    await createOcclusionMask(scene, tokenSprite, touchedTiles, maskColor, maskAlpha);
+    //await createOcclusionMask(scene, tokenSprite, touchedTiles);
+    console.log(`Máscara de oclusão criada para o token "${tokenDoc.name}"`);
+  } else {
+    console.log(`Token "${tokenDoc.name}" NÃO está tocando nenhum tile.`);
+  }
+
+});
+
+// Função para verificar sobreposição básica de bounds
+function checkBoundsOverlap(token, tile) {
+  const tokenSprite = token.mesh;
+  const tileSprite = tile.mesh;
+	
+  // Primeiro faz uma verificação rápida de bounds
+  const tokenBounds = tokenSprite.getBounds();
+  const tileBounds = tileSprite.getBounds();
+  
+  return !(tokenBounds.left > tileBounds.right ||
+           tokenBounds.right < tileBounds.left ||
+           tokenBounds.top > tileBounds.bottom ||
+           tokenBounds.bottom < tileBounds.top);
+}
+
+
+
+// Função para criar máscara de oclusão
+async function createOcclusionMask(scene, tokenSprite, touchedTiles, maskColor, maskAlpha) {
+  // Verifica se o mundo está em perspectiva isométrica
+  const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
+  const isSceneIsometric = scene.getFlag(MODULE_ID, "isometricEnabled");
+  
+  // Cria um novo container para a máscara
+  const maskContainer = new PIXI.Container();
+  maskContainer.name = "occlusion-mask-container";
+  
+  // Cria um gráfico para desenhar a máscara
+  const maskGraphics = new PIXI.Graphics();
+  maskGraphics.beginFill(maskColor, maskAlpha);  // Usa a cor e alpha fornecidos
+  
+  // Obtém os bounds do token
+  const tokenBounds = tokenSprite.mesh.getBounds();
+  
+  // Para cada tile tocado, adiciona sua área de interseção à máscara
+  touchedTiles.forEach(tile => {
+    const tileBounds = tile.object.mesh.getBounds();
+    
+    // Calcula a intersecção
+    const intersectionLeft = Math.max(tokenBounds.left, tileBounds.left);
+    const intersectionRight = Math.min(tokenBounds.right, tileBounds.right);
+    const intersectionTop = Math.max(tokenBounds.top, tileBounds.top);
+    const intersectionBottom = Math.min(tokenBounds.bottom, tileBounds.bottom);
+    
+    // Desenha o retângulo de intersecção
+    maskGraphics.drawRect(
+      intersectionLeft, 
+      intersectionTop, 
+      intersectionRight - intersectionLeft, 
+      intersectionBottom - intersectionTop
+    );
+  });
+  
+  maskGraphics.endFill();
+  
+  // Adiciona o gráfico ao container
+  maskContainer.addChild(maskGraphics);
+  
+  // Adiciona o container à camada de interface do Foundry
+  const interfaceLayer = canvas.stage;
+  interfaceLayer.addChild(maskContainer);
+  
+  
+  
+  
+  
+  
+  
+
+  // Se o mundo estiver em perspectiva isométrica, aplica as mesmas transformações
+  if (isometricWorldEnabled && isSceneIsometric) {
+    // Aplica a mesma rotação e skew do canvas
+    maskContainer.rotation = Math.PI/4;
+    maskContainer.skew.set(0, 0);
+    
+    // Ajusta a escala para corresponder à transformação isométrica
+    const gridSize = canvas.scene.grid.size;
+    const isoScale = scene.getFlag(MODULE_ID, 'isometricScale') ?? 1;
+    maskContainer.scale.set(
+      isoScale,
+      isoScale * Math.sqrt(3)
+    );
+    
+    // Posiciona a máscara considerando os offsets isométricos
+    // Você pode precisar ajustar isso dependendo de como exatamente as outras transformações são aplicadas
+    const tokenDoc = tokenSprite.document;
+    const scaleX = tokenDoc.width;  // scale for 2x2, 3x3 tokens
+    const scaleY = tokenDoc.height; // scale for 2x2, 3x3 tokens
+    const elevation = tokenDoc.elevation ?? 0;
+    const gridDistance = canvas.scene.grid.distance;
+    const gridSizeRatio = gridSize / 100;
+    
+    // Calcula offsets isométricos (baseado na função cartesianToIso do seu código)
+    let offsetX = tokenDoc.texture.anchorX;
+    let offsetY = tokenDoc.texture.anchorY;
+    
+    offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);
+    offsetX *= gridSizeRatio;
+    offsetY *= gridSizeRatio;
+    const isoOffsets = cartesianToIso(offsetX, offsetY);
+    
+    maskContainer.position.set(
+      tokenDoc.x + isoOffsets.x,
+      tokenDoc.y + isoOffsets.y
+    );
+  }
+  
+  
+  
+  
+  // Posiciona a máscara no topo de todas as outras camadas
+  maskContainer.zIndex = Number.MAX_SAFE_INTEGER;
+  interfaceLayer.sortChildren();
+}
+
+// Função para remover a máscara de oclusão existente
+function removeOcclusionMask(scene) {
+  const interfaceLayer = canvas.stage;
+  const existingMask = interfaceLayer.getChildByName("occlusion-mask-container");
+  
+  if (existingMask) {
+    interfaceLayer.removeChild(existingMask);
+  }
+}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /*
@@ -611,63 +830,3 @@ Hooks.once('init', createOverlayLayer);
 
 
 
-/*
-// Registra o hook para quando um token se move
-Hooks.on("updateToken", async (token, changes) => {
-  // Verifica se houve mudança na posição
-  if (!changes.x && !changes.y) return;
-  
-  // Obtém a cena atual
-  const scene = game.scenes.current;
-  if (!scene) return;
-  
-  // Obtém o token atualizado
-  const tokenDoc = scene.tokens.get(token.id);
-  const tokenSprite = tokenDoc.object;
-  
-  // Obtém todos os tiles da cena
-  const tiles = scene.tiles.contents;
-  console.log(tiles);
-
-  // Variável para controlar se o token está tocando algum tile
-  let isTouching = false;
-  
-  // Para cada tile, verifica sobreposição
-  for (const tile of tiles) {
-    const tileSprite = tile.object;
-    
-    // Verifica sobreposição básica de bounds primeiro (otimização)
-    if (checkBoundsOverlap(tokenSprite, tileSprite)) {
-        // Se houver sobreposição de bounds, verifica pixel por pixel
-        //const hasPixelOverlap = await checkPixelOverlap(tokenSprite, tileSprite);
-        
-        //if (hasPixelOverlap) {
-        //    console.log(`Token "${tokenDoc.name}" está sobreposto com o tile ID: ${tile.id}`);
-        //}
-      isTouching = true;
-      break; // Se já encontrou um tile tocando, não precisa continuar
-    }
-  }
-  // Envia a mensagem apenas se o token estiver tocando algum tile
-  if (isTouching) {
-    console.log(`Token "${tokenDoc.name}" está tocando um tile.`);
-  } else {
-    console.log(`Token "${tokenDoc.name}" NÃO está tocando nenhum tile.`);
-  }
-});
-
-// Função para verificar sobreposição básica de bounds
-function checkBoundsOverlap(token, tile) {
-  const tokenSprite = token.mesh;
-	const tileSprite = tile.mesh;
-	
-	// Primeiro faz uma verificação rápida de bounds
-	const tokenBounds = tokenSprite.getBounds();
-	const tileBounds = tileSprite.getBounds();
-  
-  return !(tokenBounds.left > tileBounds.right ||
-           tokenBounds.right < tileBounds.left ||
-           tokenBounds.top > tileBounds.bottom ||
-           tokenBounds.bottom < tileBounds.top);
-}
-*/
