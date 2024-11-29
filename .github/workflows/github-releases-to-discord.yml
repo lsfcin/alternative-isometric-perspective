@@ -9,7 +9,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Github Releases To Discord
-        uses: SethCohen/github-releases-to-discord@v1
+        uses: SethCohen/github-releases-to-discord@v1.16.2
         with:
           webhook_url: ${{ secrets.WEBHOOK_URL }}
           color: "2105893"
@@ -20,8 +20,4 @@ jobs:
           footer_icon_url: "https://cdn.discordapp.com/avatars/487431320314576937/bd64361e4ba6313d561d54e78c9e7171.png"
           footer_timestamp: true
           max_description: '4096'
-<<<<<<< HEAD
           reduce_headings: true
-=======
-          reduce_headings: true
->>>>>>> ce3f38eeea1648c392b9713cc328a284c1f31009
