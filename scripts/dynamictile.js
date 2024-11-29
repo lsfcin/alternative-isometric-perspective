@@ -109,6 +109,17 @@ export function registerDynamicTileConfig() {
   Hooks.on("refreshToken", (token) => {
     updateAlwaysVisibleElements();
   });
+  /*
+  Hooks.on('renderTokenConfig', (app, html, data) => {
+    // hide all tokens
+    updateTokensOpacity(0);
+
+    // Handler for the submit form
+    html.find('form').on('submit', async (event) => {
+      updateTokensOpacity(1);
+    });
+  });
+  */
 
 
 
@@ -198,7 +209,7 @@ export function resetOpacity() {
   //updateTokensOpacity(tokensOpacity);
 }
 
-/*
+
 export function updateTokensOpacity(value) {
   tokensOpacity = Math.max(0, Math.min(1, value));
   if (tokensLayer) {
@@ -213,7 +224,7 @@ export function increaseTokensOpacity() {
 export function decreaseTokensOpacity() {
   updateTokensOpacity(tokensOpacity - 0.1);
 }
-*/
+
 
 
 
