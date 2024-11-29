@@ -1,5 +1,5 @@
 import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
-import { applyTokenTransformation, updateTokenVisuals } from './transform.js';
+import { applyIsometricTransformation, updateTokenVisuals } from './transform.js';
 
 export function registerTokenConfig() {
   Hooks.on("renderTokenConfig", handleRenderTokenConfig);
@@ -12,7 +12,7 @@ export function registerTokenConfig() {
 
 
 async function handleRenderTokenConfig(app, html, data) {
-  // Carrega o template HTML para a nova aba
+  // Load the HTML template
   const tabHtml = await renderTemplate("modules/isometric-perspective/templates/token-config.html", {
     isoDisabled: app.object.getFlag(MODULE_ID, 'isoTokenDisabled') ?? 1,
     offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
@@ -20,11 +20,11 @@ async function handleRenderTokenConfig(app, html, data) {
     scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1
   });
   
-  // Adiciona a nova aba ao menu
+  // Add a new tab to the menu
   const tabs = html.find('.tabs:not(.secondary-tabs)');
   tabs.append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
   
-  // Adiciona o conteúdo da aba após a última aba existente
+  // Adds the tab contents after the last existing tab
   const lastTab = html.find('.tab').last();
   lastTab.after(tabHtml);
 
@@ -40,18 +40,18 @@ async function handleRenderTokenConfig(app, html, data) {
   }
   */
 
-  // Inicializa os valores dos controles
+  // Initializes control values
   const isoTokenCheckbox = html.find('input[name="flags.isometric-perspective.isoTokenDisabled"]');
   isoTokenCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTokenDisabled"));
 
-  // Adiciona listener para atualizar o valor exibido do slider
+  // Add listener to update the shown value from Slider
   html.find('.scale-slider').on('input', function() {
     html.find('.range-value').text(this.value);
   });
 
-  // Handler para o formulário de submit
+  // Handler for the submit form
   html.find('form').on('submit', async (event) => {
-    // Se o valor do checkbox é true, atualiza as flags com os novos valores
+    // If the value of checkbox is true, updates the flags with the new values
     if (isoTokenCheckbox.prop("checked")) {
       await app.object.setFlag(MODULE_ID, "isoTokenDisabled", true);
     } else {
@@ -59,7 +59,7 @@ async function handleRenderTokenConfig(app, html, data) {
     }
   });
 
-  // Corrige a inicialização das tabs
+  // Fix tab init
   if (!app._tabs || app._tabs.length === 0) {
     app._tabs = [new Tabs({
       navSelector: ".tabs",
@@ -80,7 +80,7 @@ function handleCreateToken(tokenDocument) {
   if (!token) return;
   
   const isSceneIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
-  applyTokenTransformation(token, isSceneIsometric);
+  applyIsometricTransformation(token, isSceneIsometric);
 }
 
 
@@ -90,12 +90,13 @@ function handleUpdateToken(tokenDocument, updateData, options, userId) {
   if (!token) return;
   
   const isSceneIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
+  applyIsometricTransformation(token, isSceneIsometric);
   
-  if (updateData.flags?.[MODULE_ID] ||
+  /*if (updateData.flags?.[MODULE_ID] ||
       updateData.x !== undefined ||
       updateData.y !== undefined ) {
-    applyTokenTransformation(token, isSceneIsometric);
-  }
+        applyIsometricTransformation(token, isSceneIsometric);
+  }*/
 
   if (DEBUG_PRINT) console.log("Hooks.on token.js updateToken");
 }
@@ -104,7 +105,7 @@ function handleUpdateToken(tokenDocument, updateData, options, userId) {
 // Hooks.on("refreshToken")
 function handleRefreshToken(token) {
   const isSceneIsometric = token.scene.getFlag(MODULE_ID, "isometricEnabled");
-  applyTokenTransformation(token, isSceneIsometric);
+  applyIsometricTransformation(token, isSceneIsometric);
   
   if (DEBUG_PRINT) console.log("Hooks.on token.js refreshToken");
 }
@@ -128,7 +129,9 @@ function handleDeleteToken(token) {
 
 
 
-// ----------------- Token Configuration -----------------
+// ----------------- Enhanced Token Configuration -----------------
+// --- TokenPrecisionConfig adjust the scale (ratio) to has step of 0.01 instead of 0.1,
+// --- and EnhancedAnchorInput adjust the anchor X and Y to has steps of 0.01 instead of 1
 
 // Ajusta a precisão de configurações de token no Foundry VTT
 export class TokenPrecisionConfig {

@@ -73,185 +73,186 @@ export function adjustAllTokensAndTilesForIsometric() {
 
 
 
-// Função auxiliar que chama a função de transformação isométrica em um objeto específico da cena (token ou tile)
-export function applyTokenTransformation(token, isSceneIsometric) {
-  applyIsometricTransformation(token, isSceneIsometric);
-}
 
 
 
 // Função que aplica a transformação isométrica para um token ou tile -------------------------------------------------
 export function applyIsometricTransformation(object, isSceneIsometric) {
+  // Don't make any transformation if the isometric module isn't active
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
-  //let reverseTransform = object.document.getFlag(MODULE_ID, "reverseTransform") ?? false;
-  
+  if (!isometricWorldEnabled) return
+
+  // Don't make any transformation if there isn't any mesh
   if (!object.mesh) {
     if (DEBUG_PRINT) {console.warn("Mesh não encontrado:", object)}
     return;
   }
-
   
-  // Flip token horizontally, if the flag is active
+  // Disable isometric token projection, if the flag is active
   let isoTileDisabled = object.document.getFlag(MODULE_ID, 'isoTileDisabled') ?? 0;
   let isoTokenDisabled = object.document.getFlag(MODULE_ID, 'isoTokenDisabled') ?? 0;
   if (isoTileDisabled || isoTokenDisabled) return
 
   
+  // Don't make transformation on the token or tile if the scene isn't isometric
+  if (!isSceneIsometric) {
+    //object.mesh.rotation = 0;
+    //object.mesh.skew.set(0, 0);
+    //object.mesh.scale.set(objTxtRatio, objTxtRatio);
+    //object.mesh.position.set(object.document.x, object.document.y);
+    //object.document.texture.fit = "contain"; //height
+    object.mesh.anchor.set(0.5, 0.5);
+    return;
+  }
 
-  if (isometricWorldEnabled && isSceneIsometric) { // && !reverseTransform
-    // desfaz rotação e deformação
-    object.mesh.rotation = Math.PI/4;
-    object.mesh.skew.set(0, 0);
-      
-    // recupera as características de dimensões do objeto (token/tile)
-    let texture = object.texture;
-    let tileScale = object.document.texture;
-    let tileHeight = object.height;
-    let tileWidth = object.width;
-    let originalWidth = texture.width;   // art width
-    let originalHeight = texture.height; // art height
-    let ratio = originalWidth / originalHeight;
-    let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
-    let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
+  // It undoes rotation and deformation
+  object.mesh.rotation = Math.PI/4;
+  object.mesh.skew.set(0, 0);
+  object.mesh.anchor.set(0.5, 0.5);
+    
+  // recovers the object characteristics of the object (token/tile)
+  let texture = object.texture;
+  let tileScale = object.document.texture;
+  let tileHeight = object.height;
+  let tileWidth = object.width;
+  let originalWidth = texture.width;   // art width
+  let originalHeight = texture.height; // art height
+  let ratio = originalWidth / originalHeight;
+  let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
+  let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
 
-    // elevation info
-    let elevation = object.document.elevation; // elevation from tokens and tiles
-    let gridSize = canvas.scene.grid.size;
-    let gridSizeRatio = gridSize / 100;
-    let gridDistance = canvas.scene.grid.distance;
-    let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
-    
-    const ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
-    if (!ElevationAdjustment) elevation = 0;    
-    
-    
-    
-    
-    
-    // Se o objeto for um Token
-    if (object instanceof Token) {
-      let sx = 1; // standard x
-      let sy = 1; // standard y
-      let objTxtRatio_W = object.texture.width / canvas.scene.grid.size;
-      let objTxtRatio_H = object.texture.height / canvas.scene.grid.size;
-      let origScaleX = object.document.texture.scaleX;
-      let origScaleY = object.document.texture.scaleY;
+  // elevation info
+  let elevation = object.document.elevation;      // elevation from tokens and tiles
+  let gridDistance = canvas.scene.grid.distance;
+  let gridSize = canvas.scene.grid.size;
+  let gridSizeRatio = gridSize / 100;             // grid ratio in comparison with default 100
+  let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
+  
+  let ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
+  if (!ElevationAdjustment) elevation = 0;    
+  
+  
+  
+  
+  
+  if (object instanceof Token) {
+    let sx = 1; // standard x
+    let sy = 1; // standard y
+    let objTxtRatio_W = object.texture.width / canvas.scene.grid.size;
+    let objTxtRatio_H = object.texture.height / canvas.scene.grid.size;
+    //let origScaleX = object.document.texture.scaleX;
+    //let origScaleY = object.document.texture.scaleY;
 
-      switch ( object.document.texture.fit ) {
-        case "fill":
-          sx = 1;
-          sy = 1;
-          break;
-        case "contain":
-          if (Math.max(objTxtRatio_W, objTxtRatio_H) ==  objTxtRatio_W){
-            sx = 1
-            sy = (objTxtRatio_H) / (objTxtRatio_W)
-          }
-          else{
-            sx = (objTxtRatio_W) / (objTxtRatio_H)
-            sy = 1
-          }
-          break;
-        case "cover":
-          if (Math.min(objTxtRatio_W, objTxtRatio_H) == objTxtRatio_W){
-            sx = 1
-            sy = (objTxtRatio_H) / (objTxtRatio_W)
-          }
-          else{
-            sx = (objTxtRatio_W) / (objTxtRatio_H)
-            sy = 1
-          }
-          break;
-        case "width":
+    switch ( object.document.texture.fit ) {
+      case "fill":
+        sx = 1;
+        sy = 1;
+        break;
+      case "contain":
+        if (Math.max(objTxtRatio_W, objTxtRatio_H) ==  objTxtRatio_W){
           sx = 1
           sy = (objTxtRatio_H) / (objTxtRatio_W)
-          break;
-        case "height":
+        }
+        else{
           sx = (objTxtRatio_W) / (objTxtRatio_H)
           sy = 1
-          break;
-        default:
-          //throw new Error(`Invalid fill type passed to ${this.constructor.name}#resize (fit=${fit}).`);
-          console.warn("Invalid fill type passed to: ", object);
-          sx = 1;
-          sy = 1;
-      }
-      object.mesh.width  = Math.abs(sx * scaleX * gridSize * origScaleX * isoScale * Math.sqrt(2))
-      object.mesh.height = Math.abs(sy * scaleY * gridSize * origScaleY * isoScale * Math.sqrt(2) * Math.sqrt(3))
-      
-      // define o offset manual para centralizar o token
-      let offsetX = object.document.texture.anchorX;
-      let offsetY = object.document.texture.anchorY;
-      //let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
-      //let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
-     
-      // calculo referente a elevação 
-      //offsetX = offsetX + (elevation * gridSize * Math.sqrt(2) * (1/gridDistance) * (1/scaleX)); //(elevation * gridDistance * Math.sqrt(3))
-      offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);
-      offsetX *= gridSizeRatio;
-      offsetY *= gridSizeRatio;
-      
-      // distâncias transformadas
-      const isoOffsets = cartesianToIso(offsetX, offsetY);
-      
-      // criar elementos gráficos de sombra e linha
-      updateTokenVisuals(object, elevation, gridSize, gridDistance);
-
-      // posiciona o token
-      object.mesh.position.set(
-        object.document.x + (isoOffsets.x * scaleX),
-        object.document.y + (isoOffsets.y * scaleY)
-      );
-
+        }
+        break;
+      case "cover":
+        if (Math.min(objTxtRatio_W, objTxtRatio_H) == objTxtRatio_W){
+          sx = 1
+          sy = (objTxtRatio_H) / (objTxtRatio_W)
+        }
+        else{
+          sx = (objTxtRatio_W) / (objTxtRatio_H)
+          sy = 1
+        }
+        break;
+      case "width":
+        sx = 1
+        sy = (objTxtRatio_H) / (objTxtRatio_W)
+        break;
+      case "height":
+        sx = (objTxtRatio_W) / (objTxtRatio_H)
+        sy = 1
+        break;
+      default:
+        //throw new Error(`Invalid fill type passed to ${this.constructor.name}#resize (fit=${fit}).`);
+        console.warn("Invalid fill type passed to: ", object);
+        sx = 1;
+        sy = 1;
     }
+    object.mesh.width  = Math.abs(sx * scaleX * gridSize * isoScale * Math.sqrt(2))
+    object.mesh.height = Math.abs(sy * scaleY * gridSize * isoScale * Math.sqrt(2) * Math.sqrt(3))
+    
+    // Defines the manual offset to centralize the token
+    //let offsetX = object.document.texture.anchorX;
+    //let offsetY = object.document.texture.anchorY;
+    let offsetX = object.document.getFlag(MODULE_ID, 'offsetX');
+    let offsetY = object.document.getFlag(MODULE_ID, 'offsetY');
+    //object.document.texture.anchorX = offsetX;
+    //object.document.texture.anchorY = offsetY;
+    
+    // Elevation math
+    //offsetX = offsetX + (elevation * gridSize * Math.sqrt(2) * (1/gridDistance) * (1/scaleX)); //(elevation * gridDistance * Math.sqrt(3))
+    offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);
+    offsetX *= gridSizeRatio;
+    offsetY *= gridSizeRatio;
+    
+    // transformed distances
+    const isoOffsets = cartesianToIso(offsetX, offsetY);
+    
+    // Create shadow and line graphics elements
+    updateTokenVisuals(object, elevation, gridSize, gridDistance);
 
-    
-    
-    
-    
-    
-    
-    // Se o objeto for um Tile
-    else if (object instanceof Tile) {
-      //const sceneScale = canvas.scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
-      
-      // Aplicar a escala mantendo a proporção da arte original
-      object.mesh.scale.set(
-        (scaleX / originalWidth) * isoScale,
-        (scaleY / originalHeight) * isoScale * Math.sqrt(3)
-      );
-      
-      // Flip token horizontally, if the flag is active
-      let scaleFlip = object.document.getFlag(MODULE_ID, 'tokenFlipped') ?? 0;
-      if (scaleFlip) {
-        let meshScaleX = object.mesh.scale.x;
-        let meshScaleY = object.mesh.scale.y;
-        object.mesh.scale.set(-meshScaleX, meshScaleY);
-      }
+    // Position the token
+    object.mesh.position.set(
+      object.document.x + (isoOffsets.x * scaleX),
+      object.document.y + (isoOffsets.y * scaleY)
+    );
 
-      // define o offset manual para centralizar o tile
-      let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
-      let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
-      let isoOffsets = cartesianToIso(offsetX, offsetY);
-      
-      // Aplicar a posição base do tile
-      object.mesh.position.set(
-        object.document.x + (scaleX / 2) + isoOffsets.x,
-        object.document.y + (scaleY / 2) + isoOffsets.y
-      );
-    }
-  
-  
-  
-  
-  } else {
-    // Reseta todas as transformações do mesh
-    object.mesh.rotation = 0;
-    object.mesh.skew.set(0, 0);
-    object.mesh.scale.set(1, 1);
-    object.mesh.position.set(object.document.x, object.document.y);
-    object.mesh.anchor.set(0, 0);
   }
+
+  
+  
+  
+  
+  
+  
+  // If the object is a tile
+  else if (object instanceof Tile) {
+    //const sceneScale = canvas.scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
+    
+    // Apply the scale by maintaining the proportion of the original art
+    object.mesh.scale.set(
+      (scaleX / originalWidth) * isoScale,
+      (scaleY / originalHeight) * isoScale * Math.sqrt(3)
+    );
+    
+    // Flip token horizontally, if the flag is active
+    let scaleFlip = object.document.getFlag(MODULE_ID, 'tokenFlipped') ?? 0;
+    if (scaleFlip) {
+      let meshScaleX = object.mesh.scale.x;
+      let meshScaleY = object.mesh.scale.y;
+      object.mesh.scale.set(-meshScaleX, meshScaleY);
+    }
+
+    // Defines the manual offset to center the tile
+    let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
+    let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
+    let isoOffsets = cartesianToIso(offsetX, offsetY);
+    
+    // Set tile's position
+    object.mesh.position.set(
+      object.document.x + (scaleX / 2) + isoOffsets.x,
+      object.document.y + (scaleY / 2) + isoOffsets.y
+    );
+  }
+
+
+
+
+  //}
 }
 
 
