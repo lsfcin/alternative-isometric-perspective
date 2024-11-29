@@ -28,6 +28,9 @@ async function handleRenderTokenConfig(app, html, data) {
   const lastTab = html.find('.tab').last();
   lastTab.after(tabHtml);
 
+  // Update the offset fine adjustment button
+  updateAdjustOffsetButton(html);
+  
   // keeps the window height on auto
   /*
   const sheet = html.closest('.sheet');
@@ -117,18 +120,83 @@ function handleDeleteToken(token) {
 }
 
 
+function updateAdjustOffsetButton(html) {
+  const offsetPointContainer = html.find('.offset-point')[0];
+
+  // Finds the fine adjustment button on the original HTML
+  const adjustButton = offsetPointContainer.querySelector('button.fine-adjust');
+
+  // Configures the fine adjustment button
+  adjustButton.style.width = '30px';
+  adjustButton.style.cursor = 'pointer';
+  adjustButton.style.padding = '1px 5px';
+  adjustButton.style.border = '1px solid #888';
+  adjustButton.style.borderRadius = '3px';
+  adjustButton.title = 'Hold and drag to fine-tune X and Y';
+
+  // Adds the fine adjustment logic
+  let isAdjusting = false;
+  let startX = 0;
+  let startY = 0;
+  let originalValueX = 0;
+  let originalValueY = 0;
+
+  let offsetXInput = html.find('input[name="flags.isometric-perspective.offsetX"]')[0];
+  let offsetYInput = html.find('input[name="flags.isometric-perspective.offsetY"]')[0];
+
+  // Function to apply adjustment
+  const applyAdjustment = (e) => {
+    if (!isAdjusting) return;
+
+    // Calculates the difference on x and y axes
+    const deltaY = e.clientX - startX;
+    const deltaX = startY - e.clientY;
+    
+    // Fine tuning: every 10px of motion = 0.1 value 
+    const adjustmentX = deltaX * 0.1;
+    const adjustmentY = deltaY * 0.1;
+    
+    // Calculates new values
+    let newValueX = Math.round(originalValueX + adjustmentX);
+    let newValueY = Math.round(originalValueY + adjustmentY);
+    
+    // Rounding for 2 decimal places
+    newValueX = Math.round(newValueX * 100) / 100;
+    newValueY = Math.round(newValueY * 100) / 100;
+    
+    // Updates anchor inputs
+    offsetXInput.value = newValueX.toFixed(0);
+    offsetYInput.value = newValueY.toFixed(0);
+    offsetXInput.dispatchEvent(new Event('change', { bubbles: true }));
+    offsetYInput.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
+  // Listeners for Adjustment
+  adjustButton.addEventListener('mousedown', (e) => {
+    isAdjusting = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    // Obtains the original values ​​of offset inputs
+    originalValueX = parseFloat(offsetXInput.value);
+    originalValueY = parseFloat(offsetYInput.value);
+    
+    // Add global listeners
+    document.addEventListener('mousemove', applyAdjustment);
+    document.addEventListener('mouseup', () => {
+      isAdjusting = false;
+      document.removeEventListener('mousemove', applyAdjustment);
+    });
+    
+    e.preventDefault();
+  });
+}
 
 
 
 
 
-
-
-
-
-
-
-
+/*
 // ----------------- Enhanced Token Configuration -----------------
 // --- TokenPrecisionConfig adjust the scale (ratio) to has step of 0.01 instead of 0.1,
 // --- and EnhancedAnchorInput adjust the anchor X and Y to has steps of 0.01 instead of 1
@@ -199,7 +267,7 @@ TokenPrecisionConfig.initialize();
 
 
 // Módulo para melhorar a interação com inputs de anchor no Foundry VTT
-export class EnhancedAnchorInput {
+export class EnhancedAnchorInput2 {
   // Cria botões de controle e configura listeners para ajuste refinado
   static enhanceAnchorInputs(inputs) {
     // Contêiner principal para envolver os inputs e botão
@@ -295,31 +363,6 @@ export class EnhancedAnchorInput {
       e.preventDefault();
     });
 
-    /*// Adiciona tooltip explicativo
-    adjustButton.addEventListener('mouseenter', () => {
-      const tooltip = document.createElement('div');
-      tooltip.textContent = 'Hold and drag to fine-tune X and Y';
-      tooltip.style.position = 'absolute';
-      tooltip.style.background = '#333';
-      tooltip.style.color = 'white';
-      tooltip.style.padding = '5px';
-      tooltip.style.borderRadius = '3px';
-      tooltip.style.fontSize = '12px';
-      tooltip.style.zIndex = '1000';
-      tooltip.style.pointerEvents = 'none';
-      
-      // Posiciona o tooltip
-      const rect = adjustButton.getBoundingClientRect();
-      tooltip.style.top = `${rect.bottom + 5}px`;
-      tooltip.style.left = `${rect.left}px`;
-      
-      document.body.appendChild(tooltip);
-      
-      adjustButton.addEventListener('mouseleave', () => {
-        document.body.removeChild(tooltip);
-      }, { once: true });
-    });*/
-
     // Adiciona os elementos ao wrapper na ordem: X input, botão, Y input
     wrapper.appendChild(anchorXInput);
     wrapper.appendChild(adjustButton);
@@ -347,4 +390,5 @@ export class EnhancedAnchorInput {
 }
 
 // Inicializa o módulo de melhoria de inputs
-EnhancedAnchorInput.initialize();
+EnhancedAnchorInput2.initialize();
+*/
