@@ -277,156 +277,118 @@ function handleDeleteToken(token) {
 
 
 
+// Generic function to create adjustable buttons with drag functionality
+function createAdjustableButton(options) {
+  // Destructure configuration options with default values
+  const {
+    container,                // Parent container element
+    buttonSelector,           // CSS selector for the button
+    inputs,                   // Array of input elements to update
+    adjustmentScale = 0.2,    // How much the value changes per pixel moved
+    valueConstraints = null,  // Optional min/max constraints for values
+    roundingPrecision = 0     // Number of decimal places to round to
+  } = options;
+
+  // Find and configure the adjustment button
+  const adjustButton = container.querySelector(buttonSelector);
+  
+  // Apply consistent button styling
+  Object.assign(adjustButton.style, {
+    width: '30px',
+    cursor: 'pointer',
+    padding: '1px 5px',
+    border: '1px solid #888',
+    borderRadius: '3px'
+  });
+  adjustButton.title = 'Hold and drag to fine-tune X and Y';
+
+  // State variables for tracking drag operations
+  let isAdjusting = false;
+  let startX = 0;
+  let startY = 0;
+  let originalValues = [0, 0];
+
+  // Function to handle mouse movement and value adjustments
+  const applyAdjustment = (e) => {
+    if (!isAdjusting) return;
+
+    // Calculate mouse movement deltas
+    const deltaY = e.clientX - startX;
+    const deltaX = startY - e.clientY;
+    
+    // Calculate value adjustments based on mouse movement
+    const adjustments = [
+      deltaX * adjustmentScale,
+      deltaY * adjustmentScale
+    ];
+
+    // Update each input with new values
+    inputs.forEach((input, index) => {
+      let newValue = originalValues[index] + adjustments[index];
+      
+      // Apply min/max constraints if provided
+      if (valueConstraints) {
+        newValue = Math.max(valueConstraints.min, Math.min(valueConstraints.max, newValue));
+      }
+      
+      // Round to specified precision
+      newValue = Math.round(newValue * Math.pow(10, roundingPrecision)) / Math.pow(10, roundingPrecision);
+      
+      // Update input value and trigger change event
+      input.value = newValue.toFixed(roundingPrecision);
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  };
+
+  // Set up mouse event listeners for drag functionality
+  adjustButton.addEventListener('mousedown', (e) => {
+    isAdjusting = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    // Store initial input values
+    originalValues = inputs.map(input => parseFloat(input.value));
+    
+    // Add global mouse event listeners
+    document.addEventListener('mousemove', applyAdjustment);
+    document.addEventListener('mouseup', () => {
+      isAdjusting = false;
+      document.removeEventListener('mousemove', applyAdjustment);
+    });
+    
+    e.preventDefault();
+  });
+}
+
+// Handler for offset adjustment button
 function updateAdjustOffsetButton(html) {
-  const offsetPointContainer = html.find('.offset-point')[0];
-
-  // Finds the fine adjustment button on the original HTML
-  const adjustButton = offsetPointContainer.querySelector('button.fine-adjust');
-
-  // Configures the fine adjustment button
-  adjustButton.style.width = '30px';
-  adjustButton.style.cursor = 'pointer';
-  adjustButton.style.padding = '1px 5px';
-  adjustButton.style.border = '1px solid #888';
-  adjustButton.style.borderRadius = '3px';
-  adjustButton.title = 'Hold and drag to fine-tune X and Y';
-
-  // Adds the fine adjustment logic
-  let isAdjusting = false;
-  let startX = 0;
-  let startY = 0;
-  let originalValueX = 0;
-  let originalValueY = 0;
-
-  let offsetXInput = html.find('input[name="flags.isometric-perspective.offsetX"]')[0];
-  let offsetYInput = html.find('input[name="flags.isometric-perspective.offsetY"]')[0];
-
-  // Function to apply adjustment
-  const applyAdjustment = (e) => {
-    if (!isAdjusting) return;
-
-    // Calculates the difference on x and y axes
-    const deltaY = e.clientX - startX;
-    const deltaX = startY - e.clientY;
-    
-    // Fine tuning: every 10px of motion = 0.1 value 
-    const adjustmentX = deltaX * 0.2;
-    const adjustmentY = deltaY * 0.2;
-    
-    // Calculates new values
-    let newValueX = Math.round(originalValueX + adjustmentX);
-    let newValueY = Math.round(originalValueY + adjustmentY);
-    
-    // Rounding for 2 decimal places
-    newValueX = Math.round(newValueX * 100) / 100;
-    newValueY = Math.round(newValueY * 100) / 100;
-    
-    // Updates anchor inputs
-    offsetXInput.value = newValueX.toFixed(0);
-    offsetYInput.value = newValueY.toFixed(0);
-    offsetXInput.dispatchEvent(new Event('change', { bubbles: true }));
-    offsetYInput.dispatchEvent(new Event('change', { bubbles: true }));
-  };
-
-  // Listeners for Adjustment
-  adjustButton.addEventListener('mousedown', (e) => {
-    isAdjusting = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    
-    // Obtains the original values ​​of offset inputs
-    originalValueX = parseFloat(offsetXInput.value);
-    originalValueY = parseFloat(offsetYInput.value);
-    
-    // Add global listeners
-    document.addEventListener('mousemove', applyAdjustment);
-    document.addEventListener('mouseup', () => {
-      isAdjusting = false;
-      document.removeEventListener('mousemove', applyAdjustment);
-    });
-    
-    e.preventDefault();
+  const container = html.find('.offset-point')[0];
+  createAdjustableButton({
+    container,
+    buttonSelector: 'button.fine-adjust',
+    inputs: [
+      html.find('input[name="flags.isometric-perspective.offsetX"]')[0],
+      html.find('input[name="flags.isometric-perspective.offsetY"]')[0]
+    ],
+    adjustmentScale: 0.2,    // Larger scale for offset adjustments
+    roundingPrecision: 0     // Whole numbers for offset values
   });
 }
 
-
-
-
-
+// Handler for anchor adjustment button
 function updateAdjustAnchorButton(html) {
-  const offsetPointContainer = html.find('.anchor-point')[0];
-
-  // Finds the fine adjustment button on the original HTML
-  const adjustButton = offsetPointContainer.querySelector('button.fine-adjust-anchor');
-
-  // Configures the fine adjustment button
-  adjustButton.style.width = '30px';
-  adjustButton.style.cursor = 'pointer';
-  adjustButton.style.padding = '1px 5px';
-  adjustButton.style.border = '1px solid #888';
-  adjustButton.style.borderRadius = '3px';
-  adjustButton.title = 'Hold and drag to fine-tune X and Y';
-
-  // Adds the fine adjustment logic
-  let isAdjusting = false;
-  let startX = 0;
-  let startY = 0;
-  let originalValueX = 0;
-  let originalValueY = 0;
-
-  let anchorXInput = html.find('input[name="flags.isometric-perspective.isoAnchorX"]')[0];
-  let anchorYInput = html.find('input[name="flags.isometric-perspective.isoAnchorY"]')[0];
-
-  // Function to apply adjustment
-  const applyAdjustment = (e) => {
-    if (!isAdjusting) return;
-
-    // Calculates the difference on x and y axes
-    const deltaY = e.clientX - startX;
-    const deltaX = startY - e.clientY;
-    
-    // Fine tuning: every 10px of motion = 0.01 value 
-    const adjustmentX = deltaX * 0.005;
-    const adjustmentY = deltaY * 0.005;
-    
-    // Calculates new values
-    //let newValueX = Math.round(originalValueX + adjustmentX);
-    //let newValueY = Math.round(originalValueY + adjustmentY);
-    let newValueX = Math.max(0, Math.min(1, originalValueX + adjustmentX));
-    let newValueY = Math.max(0, Math.min(1, originalValueY + adjustmentY));
-    
-    // Rounding for 2 decimal places
-    newValueX = Math.round(newValueX * 100) / 100;
-    newValueY = Math.round(newValueY * 100) / 100;
-    
-    // Updates anchor inputs
-    anchorXInput.value = newValueX.toFixed(2);
-    anchorYInput.value = newValueY.toFixed(2);
-    anchorXInput.dispatchEvent(new Event('change', { bubbles: true }));
-    anchorYInput.dispatchEvent(new Event('change', { bubbles: true }));
-  };
-
-  // Listeners for Adjustment
-  adjustButton.addEventListener('mousedown', (e) => {
-    isAdjusting = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    
-    // Obtains the original values ​​of offset inputs
-    originalValueX = parseFloat(anchorXInput.value);
-    originalValueY = parseFloat(anchorYInput.value);
-    
-    // Add global listeners
-    document.addEventListener('mousemove', applyAdjustment);
-    document.addEventListener('mouseup', () => {
-      isAdjusting = false;
-      document.removeEventListener('mousemove', applyAdjustment);
-    });
-    
-    e.preventDefault();
+  const container = html.find('.anchor-point')[0];
+  createAdjustableButton({
+    container,
+    buttonSelector: 'button.fine-adjust-anchor',
+    inputs: [
+      html.find('input[name="flags.isometric-perspective.isoAnchorX"]')[0],
+      html.find('input[name="flags.isometric-perspective.isoAnchorY"]')[0]
+    ],
+    adjustmentScale: 0.005,  // Smaller scale for precise anchor adjustments
+    valueConstraints: { min: 0, max: 1 },  // Anchor values must be between 0 and 1
+    roundingPrecision: 2     // Two decimal places for anchor values
   });
 }
-
 
 
 
