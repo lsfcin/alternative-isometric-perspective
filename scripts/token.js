@@ -1,5 +1,6 @@
 import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 import { applyIsometricTransformation, updateTokenVisuals } from './transform.js';
+import { cartesianToIso, isoToCartesian } from './utils.js';
 
 export function registerTokenConfig() {
   Hooks.on("renderTokenConfig", handleRenderTokenConfig);
@@ -17,6 +18,9 @@ async function handleRenderTokenConfig(app, html, data) {
     isoDisabled: app.object.getFlag(MODULE_ID, 'isoTokenDisabled') ?? 1,
     offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
     offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0,
+    isoAnchorY: app.object.getFlag(MODULE_ID, 'isoAnchorY') ?? 0,
+    isoAnchorX: app.object.getFlag(MODULE_ID, 'isoAnchorX') ?? 0,
+    isoAnchorToggleCheckbox: app.object.getFlag(MODULE_ID, 'isoAnchorToggle') ?? 0,
     scale: app.object.getFlag(MODULE_ID, 'scale') ?? 1
   });
   
@@ -30,18 +34,7 @@ async function handleRenderTokenConfig(app, html, data) {
 
   // Update the offset fine adjustment button
   updateAdjustOffsetButton(html);
-  
-  // keeps the window height on auto
-  /*
-  const sheet = html.closest('.sheet');
-  if (sheet.length) {
-    sheet.css({ 'height': 'auto', 'min-height': '0' });
-    const windowContent = sheet.find('.window-content');
-    if (windowContent.length) {
-      windowContent.css({ 'height': 'auto', 'overflow': 'visible' });
-    }
-  }
-  */
+  updateAdjustAnchorButton(html);
 
   // Initializes control values
   const isoTokenCheckbox = html.find('input[name="flags.isometric-perspective.isoTokenDisabled"]');
@@ -71,6 +64,160 @@ async function handleRenderTokenConfig(app, html, data) {
       callback: () => {}
     })];
     app._tabs[0].bind(html[0]);
+  }
+
+
+
+
+
+
+  // Initializes control values
+  const isoAnchorToggleCheckbox = html.find('input[name="flags.isometric-perspective.isoAnchorToggle"]');
+  isoAnchorToggleCheckbox.prop("unchecked", app.object.getFlag(MODULE_ID, "isoAnchorToggle") ?? false);
+
+  // Function to draw alignment lines
+  function drawAlignmentLines(isoAnchor) {
+    // Removes existing lines
+    cleanup();
+    
+    // Create container for the lines
+    const graphics = new PIXI.Graphics();
+    graphics.name = 'tokenAlignmentLine';
+    graphics.lineStyle(1, 0xFF0000, 0.75); // Largura, Cor, Opacidade
+
+    // Calculate diagonal length
+    const canvasWidth = canvas.dimensions.width;
+    const canvasHeight = canvas.dimensions.height;
+    const diagonalLength = Math.sqrt(Math.pow(canvasWidth, 2) + Math.pow(canvasHeight, 2));
+
+    // Draw lines
+    graphics.moveTo(isoAnchor.x - diagonalLength / 2, isoAnchor.y - diagonalLength / 2);
+    graphics.lineTo(isoAnchor.x + diagonalLength / 2, isoAnchor.y + diagonalLength / 2);
+    
+    graphics.moveTo(isoAnchor.x - diagonalLength / 2, isoAnchor.y + diagonalLength / 2);
+    graphics.lineTo(isoAnchor.x + diagonalLength / 2, isoAnchor.y - diagonalLength / 2);
+
+    // Add on canvas
+    canvas.stage.addChild(graphics);
+    return graphics;
+  };
+
+  // Function to calculate the alignment point
+  function updateIsoAnchor(isoAnchorX, isoAnchorY, offsetX, offsetY) {
+    let tokenMesh = app.token.object.mesh;
+    if (!tokenMesh) return { x: 0, y: 0 };
+    
+    // Defines the values ​​and transforms strings into numbers
+    let textureValues = cartesianToIso(
+      tokenMesh.height,
+      tokenMesh.width
+    );
+    let isoAnchors = cartesianToIso(
+      parseFloat(isoAnchorX) * tokenMesh.height,
+      parseFloat(isoAnchorY) * tokenMesh.width
+    );
+    let isoOffsets = cartesianToIso(
+      parseFloat(offsetX), 
+      parseFloat(offsetY)
+    );
+
+    return {
+      x: (tokenMesh.x - textureValues.x/2) + isoOffsets.x + isoAnchors.x,
+      y: (tokenMesh.y - textureValues.y/2) + isoOffsets.y + isoAnchors.y
+    };
+  };
+
+  
+
+  // Function to remove the lines
+  function cleanup() {
+    const existingLines = canvas.stage.children.filter(child => child.name === 'tokenAlignmentLine');
+    existingLines.forEach(line => line.destroy());
+  };
+
+  
+  // Initialize the lines with the current values
+  let isoAnchorX = app.object.getFlag(MODULE_ID, 'isoAnchorX') ?? 0;
+  let isoAnchorY = app.object.getFlag(MODULE_ID, 'isoAnchorY') ?? 0;
+  let offsetX = app.object.getFlag(MODULE_ID, 'offsetX') ?? 0;
+  let offsetY = app.object.getFlag(MODULE_ID, 'offsetY') ?? 0;
+  
+  // Add the button to reset the token settings
+  const toggleButton = document.createElement("button");
+  toggleButton.classList.add("toggle-alignment-lines");
+  toggleButton.textContent = "Reset Token Alignment Configuration";
+  toggleButton.title = "Click to toggle the alignment lines";
+  html.find(".anchor-point").append(toggleButton);
+
+  // Variables to control state
+  let graphics;
+  let showAlignmentLines = true;
+  
+  // Add the click event to the button
+  toggleButton.addEventListener("click", async (event) => {
+    event.preventDefault(); // Evita que o clique feche a janela
+
+    // Reset all alignment settings
+    html.find('input[name="texture.anchorX"]').val(0.5);
+    html.find('input[name="texture.anchorY"]').val(0.5);
+    html.find('input[name="flags.isometric-perspective.isoAnchorX"]').val(0.5);
+    html.find('input[name="flags.isometric-perspective.isoAnchorY"]').val(0.5);
+    html.find('input[name="flags.isometric-perspective.offsetX"]').val(0);
+    html.find('input[name="flags.isometric-perspective.offsetY"]').val(0);
+    html.find('input[name="flags.isometric-perspective.scale"]').val(1);
+
+    graphics = drawAlignmentLines(updateIsoAnchor(isoAnchorX, isoAnchorY, offsetX, offsetY));
+  });
+  
+
+  // Add a listener to the "Save?" Checkbox, If it is marked, draw the lines
+  isoAnchorToggleCheckbox.on('change', async () => {
+    const isChecked = isoAnchorToggleCheckbox.prop("checked");
+    if (isChecked) graphics = drawAlignmentLines(updateIsoAnchor(isoAnchorX, isoAnchorY, offsetX, offsetY));
+    
+    // Invert the state of the selector
+    showAlignmentLines = !showAlignmentLines;
+  });
+  
+  // Update the lines when changing the inputs
+  html.find('input[name="flags.isometric-perspective.isoAnchorX"], input[name="flags.isometric-perspective.isoAnchorY"], input[name="flags.isometric-perspective.offsetX"], input[name="flags.isometric-perspective.offsetY"]').on('change', () => {
+    // Take updated values ​​directly from inputs
+    let currentIsoAnchorX = html.find('input[name="flags.isometric-perspective.isoAnchorX"]').val();
+    let currentIsoAnchorY = html.find('input[name="flags.isometric-perspective.isoAnchorY"]').val();
+    let currentOffsetX = html.find('input[name="flags.isometric-perspective.offsetX"]').val();
+    let currentOffsetY = html.find('input[name="flags.isometric-perspective.offsetY"]').val();
+    
+    // Recalculate the position and creates the lines again
+    const newAnchor = updateIsoAnchor(currentIsoAnchorX, currentIsoAnchorY, currentOffsetX, currentOffsetY);
+    graphics = drawAlignmentLines(newAnchor); // Adicionar novas
+  });
+
+  
+  
+  
+
+
+  // Removes all lines when clicking on update token
+  html.find('button[type="submit"]').on('click', () => {
+    if (!isoAnchorToggleCheckbox.prop("checked")) {
+      cleanup();
+    } else {
+      // Update the anchor basic values ​​in the token configuration
+      html.find('input[name="texture.anchorX"]').val(isoAnchorY);
+      html.find('input[name="texture.anchorY"]').val(1-isoAnchorX);
+    }
+  });
+
+  // Changes the Close method to delete the lines, IF avoids changing the method more than once
+  if (!app._isCloseModified) {
+    const originalClose = app.close;
+    app.close = async function (options) {
+      cleanup();
+      await originalClose.apply(this, [options]);
+    };
+
+    // Mark that the close method has already been
+    app._isCloseModified = true;
   }
 }
 
@@ -120,6 +267,16 @@ function handleDeleteToken(token) {
 }
 
 
+
+
+
+
+
+
+
+
+
+
 function updateAdjustOffsetButton(html) {
   const offsetPointContainer = html.find('.offset-point')[0];
 
@@ -154,8 +311,8 @@ function updateAdjustOffsetButton(html) {
     const deltaX = startY - e.clientY;
     
     // Fine tuning: every 10px of motion = 0.1 value 
-    const adjustmentX = deltaX * 0.1;
-    const adjustmentY = deltaY * 0.1;
+    const adjustmentX = deltaX * 0.2;
+    const adjustmentY = deltaY * 0.2;
     
     // Calculates new values
     let newValueX = Math.round(originalValueX + adjustmentX);
@@ -192,6 +349,98 @@ function updateAdjustOffsetButton(html) {
     e.preventDefault();
   });
 }
+
+
+
+
+
+function updateAdjustAnchorButton(html) {
+  const offsetPointContainer = html.find('.anchor-point')[0];
+
+  // Finds the fine adjustment button on the original HTML
+  const adjustButton = offsetPointContainer.querySelector('button.fine-adjust-anchor');
+
+  // Configures the fine adjustment button
+  adjustButton.style.width = '30px';
+  adjustButton.style.cursor = 'pointer';
+  adjustButton.style.padding = '1px 5px';
+  adjustButton.style.border = '1px solid #888';
+  adjustButton.style.borderRadius = '3px';
+  adjustButton.title = 'Hold and drag to fine-tune X and Y';
+
+  // Adds the fine adjustment logic
+  let isAdjusting = false;
+  let startX = 0;
+  let startY = 0;
+  let originalValueX = 0;
+  let originalValueY = 0;
+
+  let anchorXInput = html.find('input[name="flags.isometric-perspective.isoAnchorX"]')[0];
+  let anchorYInput = html.find('input[name="flags.isometric-perspective.isoAnchorY"]')[0];
+
+  // Function to apply adjustment
+  const applyAdjustment = (e) => {
+    if (!isAdjusting) return;
+
+    // Calculates the difference on x and y axes
+    const deltaY = e.clientX - startX;
+    const deltaX = startY - e.clientY;
+    
+    // Fine tuning: every 10px of motion = 0.01 value 
+    const adjustmentX = deltaX * 0.005;
+    const adjustmentY = deltaY * 0.005;
+    
+    // Calculates new values
+    //let newValueX = Math.round(originalValueX + adjustmentX);
+    //let newValueY = Math.round(originalValueY + adjustmentY);
+    let newValueX = Math.max(0, Math.min(1, originalValueX + adjustmentX));
+    let newValueY = Math.max(0, Math.min(1, originalValueY + adjustmentY));
+    
+    // Rounding for 2 decimal places
+    newValueX = Math.round(newValueX * 100) / 100;
+    newValueY = Math.round(newValueY * 100) / 100;
+    
+    // Updates anchor inputs
+    anchorXInput.value = newValueX.toFixed(2);
+    anchorYInput.value = newValueY.toFixed(2);
+    anchorXInput.dispatchEvent(new Event('change', { bubbles: true }));
+    anchorYInput.dispatchEvent(new Event('change', { bubbles: true }));
+  };
+
+  // Listeners for Adjustment
+  adjustButton.addEventListener('mousedown', (e) => {
+    isAdjusting = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    
+    // Obtains the original values ​​of offset inputs
+    originalValueX = parseFloat(anchorXInput.value);
+    originalValueY = parseFloat(anchorYInput.value);
+    
+    // Add global listeners
+    document.addEventListener('mousemove', applyAdjustment);
+    document.addEventListener('mouseup', () => {
+      isAdjusting = false;
+      document.removeEventListener('mousemove', applyAdjustment);
+    });
+    
+    e.preventDefault();
+  });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -263,16 +512,22 @@ export class TokenPrecisionConfig {
 
 // Inicializa as configurações de precisão ao carregar o módulo
 TokenPrecisionConfig.initialize();
+*/
 
-
-
-
-// Módulo para melhorar a interação com inputs de anchor no Foundry VTT
-export class EnhancedAnchorInput2 {
+/*
+export class EnhancedAnchorInput {
   // Cria botões de controle e configura listeners para ajuste refinado
   static enhanceAnchorInputs(inputs) {
+    // Verifica se o wrapper já existe
+    let wrapper = inputs[0].parentNode;
+    if (wrapper.classList.contains('enhanced-anchor-wrapper')) {
+      // Se existir, remove o wrapper e seus filhos
+      wrapper.parentNode.replaceChild(inputs[0], wrapper);
+      wrapper.parentNode.replaceChild(inputs[1], wrapper.lastElementChild);
+    }
+    
     // Contêiner principal para envolver os inputs e botão
-    const wrapper = document.createElement('div');
+    wrapper = document.createElement('div');
     wrapper.style.display = 'flex';
     wrapper.style.alignItems = 'center';
     wrapper.style.gap = '5px';
@@ -391,5 +646,6 @@ export class EnhancedAnchorInput2 {
 }
 
 // Inicializa o módulo de melhoria de inputs
-EnhancedAnchorInput2.initialize();
+EnhancedAnchorInput.initialize();
 */
+

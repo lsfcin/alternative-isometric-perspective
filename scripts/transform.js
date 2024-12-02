@@ -101,14 +101,18 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     //object.mesh.scale.set(objTxtRatio, objTxtRatio);
     //object.mesh.position.set(object.document.x, object.document.y);
     //object.document.texture.fit = "contain"; //height
-    object.mesh.anchor.set(0.5, 0.5);
+    //object.mesh.anchor.set(0.5, 0.5);
     return;
   }
 
   // It undoes rotation and deformation
+  //let isoAnchorX = object.document.getFlag(MODULE_ID, 'isoAnchorX') ?? 0.5;
+  //let isoAnchorY = object.document.getFlag(MODULE_ID, 'isoAnchorY') ?? 0.5;
+  //console.log("isoAnchorX, isoAnchorY", isoAnchorX, isoAnchorY);
+  //console.log(object);
   object.mesh.rotation = Math.PI/4;
   object.mesh.skew.set(0, 0);
-  object.mesh.anchor.set(0.5, 0.5);
+  //object.mesh.anchor.set(isoAnchorX, isoAnchorY);
     
   // recovers the object characteristics of the object (token/tile)
   let texture = object.texture;
@@ -190,6 +194,8 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     //let offsetY = object.document.texture.anchorY;
     let offsetX = object.document.getFlag(MODULE_ID, 'offsetX');
     let offsetY = object.document.getFlag(MODULE_ID, 'offsetY');
+    let isoAnchorY = object.document.getFlag(MODULE_ID, 'isoAnchorY');
+    let isoAnchorX = object.document.getFlag(MODULE_ID, 'isoAnchorX');
     //object.document.texture.anchorX = offsetX;
     //object.document.texture.anchorY = offsetY;
     
@@ -207,10 +213,9 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 
     // Position the token
     object.mesh.position.set(
-      object.document.x + (isoOffsets.x * scaleX),
-      object.document.y + (isoOffsets.y * scaleY)
-    );
-
+      object.document.x + (object.document.width * canvas.scene.grid.size/2) + (isoOffsets.x * scaleX),
+      object.document.y + (object.document.height * canvas.scene.grid.size/2) + (isoOffsets.y * scaleY)
+      );
   }
 
   
