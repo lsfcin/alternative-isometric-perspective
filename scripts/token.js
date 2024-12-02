@@ -26,7 +26,7 @@ async function handleRenderTokenConfig(app, html, data) {
   
   // Add a new tab to the menu
   const tabs = html.find('.tabs:not(.secondary-tabs)');
-  tabs.append(`<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> ${game.i18n.localize('isometric-perspective.tab_isometric_name')}</a>`);
+  tabs.append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
   
   // Adds the tab contents after the last existing tab
   const lastTab = html.find('.tab').last();
@@ -289,8 +289,7 @@ function updateAdjustOffsetButton(html) {
   adjustButton.style.padding = '1px 5px';
   adjustButton.style.border = '1px solid #888';
   adjustButton.style.borderRadius = '3px';
-  //adjustButton.title = 'Hold and drag to fine-tune X and Y';
-  adjustButton.title = game.i18n.localize('isometric-perspective.token_artOffset_mouseover');
+  adjustButton.title = 'Hold and drag to fine-tune X and Y';
 
   // Adds the fine adjustment logic
   let isAdjusting = false;
@@ -648,4 +647,3 @@ export class EnhancedAnchorInput {
 // Inicializa o módulo de melhoria de inputs
 EnhancedAnchorInput.initialize();
 */
-

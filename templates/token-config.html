@@ -1,17 +1,17 @@
 <!-- Isometric Token Configuration.html -->
 <div class="tab" data-tab="isometric">
   <div class="form-group">
-    <label>{{localize 'isometric-perspective.token_enableIsometric_name'}}</label>
+    <label>Disable Isometric Token</label>
     <div class="form-fields">
         <input type="checkbox" name="flags.isometric-perspective.isoTokenDisabled" {{#if isoTokenDisabled}}checked{{/if}}>
     </div>
-    <p class="notes">{{localize 'isometric-perspective.token_enableIsometric_hint'}}</p>
+    <p class="notes">Disable isometric transformation on this token.</p>
   </div>
 
   <hr>
   
   <div class="form-group offset-point">
-    <label>{{localize 'isometric-perspective.token_artOffset_name'}}</label>
+    <label>Art Offset</label>
     <div class="form-fields">
       <label class="axisX">X</label>
       <input type="number" name="flags.isometric-perspective.offsetY" 
@@ -23,7 +23,7 @@
              step="1" />
       <label class="axisY">Y</label>
     </div>
-    <p class="notes">{{localize 'isometric-perspective.token_artOffset_hint'}}</p>
+    <p class="notes">Offset the token art position in pixels.</p>
   </div>
 
   <div class="form-group anchor-point">
@@ -45,7 +45,7 @@
   </div>
 
   <div class="form-group">
-    <label>{{localize 'isometric-perspective.token_scale_name'}}</label>
+    <label>Isometric Scale</label>
     <div class="form-fields">
       <input type="range" name="flags.isometric-perspective.scale"
              value="{{scale}}"
@@ -53,7 +53,7 @@
              class="scale-slider" />
       <span class="range-value">{{scale}}</span>
     </div>
-    <p class="notes">{{localize 'isometric-perspective.token_scale_hint'}}</p>
+    <p class="notes">Adjust scale of tile art when in isometric perspective (0.01x to 3x).</p>
   </div>
 
   <style>
