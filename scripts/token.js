@@ -26,7 +26,7 @@ async function handleRenderTokenConfig(app, html, data) {
   
   // Add a new tab to the menu
   const tabs = html.find('.tabs:not(.secondary-tabs)');
-  tabs.append('<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> Isometric</a>');
+  tabs.append(`<a class="item" data-tab="isometric"><i class="fas fa-cube"></i> ${game.i18n.localize('isometric-perspective.tab_isometric_name')}</a>`);
   
   // Adds the tab contents after the last existing tab
   const lastTab = html.find('.tab').last();
@@ -300,7 +300,8 @@ function createAdjustableButton(options) {
     border: '1px solid #888',
     borderRadius: '3px'
   });
-  adjustButton.title = 'Hold and drag to fine-tune X and Y';
+  //adjustButton.title = 'Hold and drag to fine-tune X and Y';
+  adjustButton.title = game.i18n.localize('isometric-perspective.token_artOffset_mouseover');
 
   // State variables for tracking drag operations
   let isAdjusting = false;
