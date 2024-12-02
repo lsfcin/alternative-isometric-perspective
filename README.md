@@ -11,13 +11,7 @@
 
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID)
-<span align="top">
-  <a href="https://discord.gg/64p6ZqQBNX" style="text-decoration: none; display: inline-block; font-family: Arial, sans-serif;">
-    <span style="display: flex; align-items: center; background-color: #5865f2; color: white; padding: 5px 10px; border-radius: 4px 0 0 4px;">
-      <img src="https://cdn-icons-png.freepik.com/256/15047/15047557.png" alt="Discord" style="width: 20px; height: 20px; margin-right: 5px;"> Discord Server</span>
-  </a>
-</span>
-<br>
+[![Discord](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/discordsm.png)](https://discord.gg/64p6ZqQBNX)
 
 This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
 
@@ -26,10 +20,11 @@ This module changes the map, tiles and token artwork/sprite for use with maps an
 Here are some of the features the module offers.
 
 - **Dual Canvas Perspectives:** You can use top-down isometric or native isometric maps. In native isometric mode, you can adjust the scale of the map.
-- **Token Sprite Adjustments:** You can fine-tune the position of the token sprite, as well as its scale. Increasing the size of the token automatically increases the size of the sprite.
+- **Token Sprite Adjustments:** You can fine-tune the position of the token sprite, as well as its scale. Increasing the size of the token automatically increases the size of the sprite. You can adjust the token art sprite to be centered even if the token is assymetrical.
 - **Tile Sprite Adjustments:** You can also fine-tune the sprite position and scale, making easy to copy and paste multiple tiles. There's also a easy Flip Tile option.
 - **Token Height Visual Cues:** If a token has any elevation, its sprite adjusts to reflect the height, with a round shadow and line sprites being created for clarity.
-- **Dynamic Tile:** If a tile is configured, the position of the token can make a tile invisible.
+- **Dynamic Tile:** If you link a tile to a wall, the position of the token can make the tile invisible, and having a isometric game-like experience.
+- **Auto Sorting Token:** Tokens are automatically ordered, with tokens that are further away appear behind tokens that are closer, based on canvas position.
 
 ## Configuration Screens
 
@@ -88,10 +83,11 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 - [ ] Code to handle tiles and walls.
 - [ ] Code to handle occlusion of tiles and tokens.
 - [ ] Different token art for isometric and top-down views.
+- [ ] Code to handle non symmetrical token sizes.
 - [ ] Translation to other languages.
 - [x] Check compatibility with other canvas related modules.
 - [x] Bugfix: Change tokens properties (vision) change token position.
-- [x] Using core foundry controls for token scale and anchor. *(Added in the code as an alternative, need to see yet if is worth it using).*
+- [x] Using core foundry controls for token scale and anchor. *(Scrapped idea).*
 
 ## Contribution
 
