@@ -79,8 +79,19 @@ async function handleRenderTokenConfig(app, html, data) {
 
 
 
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   // Initializes control values
-  const isoAnchorToggleCheckbox = html.find('input[name="flags.isometric-perspective.isoAnchorToggle"]');
+  const isoAnchorToggleCheckbox = html.find('input[name="isoAnchorToggle"]');
   isoAnchorToggleCheckbox.prop("unchecked", app.object.getFlag(MODULE_ID, "isoAnchorToggle") ?? false);
 
   // Function to draw alignment lines
@@ -210,9 +221,13 @@ async function handleRenderTokenConfig(app, html, data) {
     if (!isoAnchorToggleCheckbox.prop("checked")) {
       cleanup();
     } else {
+      // Take updated values ​​directly from inputs
+      let currentIsoAnchorX = html.find('input[name="flags.isometric-perspective.isoAnchorX"]').val();
+      let currentIsoAnchorY = html.find('input[name="flags.isometric-perspective.isoAnchorY"]').val();
+      
       // Update the anchor basic values ​​in the token configuration
-      html.find('input[name="texture.anchorX"]').val(isoAnchorY);
-      html.find('input[name="texture.anchorY"]').val(1-isoAnchorX);
+      html.find('input[name="texture.anchorX"]').val(currentIsoAnchorY);
+      html.find('input[name="texture.anchorY"]').val(1-currentIsoAnchorX);
     }
   });
 
@@ -228,6 +243,22 @@ async function handleRenderTokenConfig(app, html, data) {
     app._isCloseModified = true;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
