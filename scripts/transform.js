@@ -84,7 +84,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 
   // Don't make any transformation if there isn't any mesh
   if (!object.mesh) {
-    if (DEBUG_PRINT) {console.warn("Mesh não encontrado:", object)}
+    if (DEBUG_PRINT) {console.warn("Mesh not found:", object)}
     return;
   }
   
@@ -106,22 +106,14 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   }
 
   // It undoes rotation and deformation
-  //let isoAnchorX = object.document.getFlag(MODULE_ID, 'isoAnchorX') ?? 0.5;
-  //let isoAnchorY = object.document.getFlag(MODULE_ID, 'isoAnchorY') ?? 0.5;
-  //console.log("isoAnchorX, isoAnchorY", isoAnchorX, isoAnchorY);
-  //console.log(object);
   object.mesh.rotation = Math.PI/4;
   object.mesh.skew.set(0, 0);
   //object.mesh.anchor.set(isoAnchorX, isoAnchorY);
     
   // recovers the object characteristics of the object (token/tile)
   let texture = object.texture;
-  let tileScale = object.document.texture;
-  let tileHeight = object.height;
-  let tileWidth = object.width;
   let originalWidth = texture.width;   // art width
   let originalHeight = texture.height; // art height
-  let ratio = originalWidth / originalHeight;
   let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
   let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
   
@@ -129,12 +121,14 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   let isoScaleDisabled = object.document.getFlag(MODULE_ID, "isoScaleDisabled");
   if (isoScaleDisabled) scaleX = scaleY = 1;
 
+  
   // elevation info
   let elevation = object.document.elevation;      // elevation from tokens and tiles
-  let gridDistance = canvas.scene.grid.distance;
+  let gridDistance = canvas.scene.grid.distance;  // size of one unit of the grid
   let gridSize = canvas.scene.grid.size;
-  let gridSizeRatio = gridSize / 100;             // grid ratio in comparison with default 100
-  let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
+  let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1;  // dynamic scale
+  let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0; // art offset of object
+  let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0; // art offset of object
   
   // if module settings flag is not set, don't move art token
   let ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
@@ -149,9 +143,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     let sy = 1; // standard y
     let objTxtRatio_W = object.texture.width / canvas.scene.grid.size;
     let objTxtRatio_H = object.texture.height / canvas.scene.grid.size;
-    //let origScaleX = object.document.texture.scaleX;
-    //let origScaleY = object.document.texture.scaleY;
-
+    
     switch ( object.document.texture.fit ) {
       case "fill":
         sx = 1;
@@ -194,21 +186,10 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     object.mesh.width  = Math.abs(sx * scaleX * gridSize * isoScale * Math.sqrt(2))
     object.mesh.height = Math.abs(sy * scaleY * gridSize * isoScale * Math.sqrt(2) * Math.sqrt(3))
     
-    // Defines the manual offset to centralize the token
-    //let offsetX = object.document.texture.anchorX;
-    //let offsetY = object.document.texture.anchorY;
-    let offsetX = object.document.getFlag(MODULE_ID, 'offsetX');
-    let offsetY = object.document.getFlag(MODULE_ID, 'offsetY');
-    let isoAnchorY = object.document.getFlag(MODULE_ID, 'isoAnchorY');
-    let isoAnchorX = object.document.getFlag(MODULE_ID, 'isoAnchorX');
-    //object.document.texture.anchorX = offsetX;
-    //object.document.texture.anchorY = offsetY;
-    
     // Elevation math
-    //offsetX = offsetX + (elevation * gridSize * Math.sqrt(2) * (1/gridDistance) * (1/scaleX)); //(elevation * gridDistance * Math.sqrt(3))
     offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);
-    offsetX *= gridSizeRatio;
-    offsetY *= gridSizeRatio;
+    offsetX *= gridSize / 100;   // grid ratio in comparison with default 100
+    offsetY *= gridSize / 100;   // grid ratio in comparison with default 100
     
     // transformed distances
     const isoOffsets = cartesianToIso(offsetX, offsetY);
@@ -218,9 +199,14 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 
     // Position the token
     object.mesh.position.set(
-      object.document.x + (object.document.width * canvas.scene.grid.size/2) + (isoOffsets.x * scaleX),
-      object.document.y + (object.document.height * canvas.scene.grid.size/2) + (isoOffsets.y * scaleY)
-      );
+      object.document.x + (scaleX * gridSize/2) + (scaleX * isoOffsets.x),
+      object.document.y + (scaleX * gridSize/2) + (scaleX * isoOffsets.y)
+    );
+    // original code
+    //object.mesh.position.set(
+      //object.document.x + (isoOffsets.x * scaleX),
+      //object.document.y + (isoOffsets.y * scaleY)
+    //);
   }
 
   
@@ -248,8 +234,6 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
     }
 
     // Defines the manual offset to center the tile
-    let offsetX = object.document.getFlag(MODULE_ID, 'offsetX') ?? 0;
-    let offsetY = object.document.getFlag(MODULE_ID, 'offsetY') ?? 0;
     let isoOffsets = cartesianToIso(offsetX, offsetY);
     
     // Set tile's position
@@ -258,11 +242,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
       object.document.y + (scaleY / 2) + isoOffsets.y
     );
   }
-
-
-
-
-  //}
+  
 }
 
 
@@ -272,16 +252,11 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
 // Função para transformar o background da cena
 export function applyBackgroundTransformation(scene, isSceneIsometric, shouldTransform) {
   if (!canvas?.primary?.background) {
-    if (DEBUG_PRINT) console.warn("Background não encontrado");
+    if (DEBUG_PRINT) console.warn("Background not found.");
     return;
   }
 
-  //console.log(scene);
-  //console.log(scene); versão melhorada
-  // para afetar o canvas dentro do grid configuration tool
-  // modificar o canvas.stage resolve, mas ele não tem como transformar a arte
-  //const background = scene.stage.background;
-
+  //const background = scene.stage.background; //don't work
   const background = canvas.environment.primary.background;
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const scale = scene.getFlag(MODULE_ID, "isometricScale") ?? 1;
