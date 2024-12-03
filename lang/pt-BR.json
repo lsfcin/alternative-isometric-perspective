@@ -45,6 +45,8 @@
     "isometric-perspective.token_resetAlignmentButton_mouseover": "Clique para reiniciar as configurações de alinhamento do token.",
     "isometric-perspective.token_scale_name": "Escala Isométrica",
     "isometric-perspective.token_scale_hint": "Ajusta a escala da arte do token no modo isométrico (0.01x a 3x).",
+    "isometric-perspective.token_disableScale_name": "Desabilita Escala Isométrica Automática",
+    "isometric-perspective.token_disableScale_hint": "Se estiver marcado, este token não irá redimensionar sua arte automaticamente ao ter suas dimensões alteradas.",
 
     "isometric-perspective._comment": "Configuração de Tiles",
     "isometric-perspective.tile_enableIsometric_name": "Desabilitar Tile Isométrico",

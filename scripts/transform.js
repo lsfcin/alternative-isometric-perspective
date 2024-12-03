@@ -124,6 +124,10 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   let ratio = originalWidth / originalHeight;
   let scaleX = object.document.width;  // scale for 2x2, 3x3 tokens
   let scaleY = object.document.height; // scale for 2x2, 3x3 tokens
+  
+  // if Disable Auto-Scale checkbox is set, don't auto-scale tokens
+  let isoScaleDisabled = object.document.getFlag(MODULE_ID, "isoScaleDisabled");
+  if (isoScaleDisabled) scaleX = scaleY = 1;
 
   // elevation info
   let elevation = object.document.elevation;      // elevation from tokens and tiles
@@ -132,6 +136,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
   let gridSizeRatio = gridSize / 100;             // grid ratio in comparison with default 100
   let isoScale = object.document.getFlag(MODULE_ID, 'scale') ?? 1; // dynamic scale 
   
+  // if module settings flag is not set, don't move art token
   let ElevationAdjustment = game.settings.get(MODULE_ID, "enableHeightAdjustment");
   if (!ElevationAdjustment) elevation = 0;    
   

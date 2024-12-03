@@ -39,6 +39,8 @@ async function handleRenderTokenConfig(app, html, data) {
   // Initializes control values
   const isoTokenCheckbox = html.find('input[name="flags.isometric-perspective.isoTokenDisabled"]');
   isoTokenCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTokenDisabled"));
+  const isoScaleDisabled = html.find('input[name="flags.isometric-perspective.isoScaleDisabled"]');
+  isoScaleDisabled.prop("checked", app.object.getFlag(MODULE_ID, "isoScaleDisabled"));
 
   // Add listener to update the shown value from Slider
   html.find('.scale-slider').on('input', function() {
@@ -52,6 +54,12 @@ async function handleRenderTokenConfig(app, html, data) {
       await app.object.setFlag(MODULE_ID, "isoTokenDisabled", true);
     } else {
       await app.object.unsetFlag(MODULE_ID, "isoTokenDisabled");
+    }
+
+    if (isoScaleDisabled.prop("checked")) {
+      await app.object.setFlag(MODULE_ID, "isoScaleDisabled", true);
+    } else {
+      await app.object.unsetFlag(MODULE_ID, "isoScaleDisabled");
     }
   });
 

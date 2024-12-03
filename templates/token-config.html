@@ -56,6 +56,14 @@
     <p class="notes">{{localize 'isometric-perspective.token_scale_hint'}}</p>
   </div>
 
+  <div class="form-group">
+    <label>{{localize 'isometric-perspective.token_disableScale_name'}}</label>
+    <div class="form-fields">
+        <input type="checkbox" name="flags.isometric-perspective.isoScaleDisabled" {{#if isoTokenDisabled}}checked{{/if}}>
+    </div>
+    <p class="notes">{{localize 'isometric-perspective.token_disableScale_hint'}}</p>
+  </div>
+
   <style>
     .offset-point .form-fields {
       display: flex;
