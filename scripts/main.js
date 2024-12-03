@@ -25,10 +25,8 @@ Hooks.once("init", function() {
   // ------------- Registra as configurações do módulo ------------- 
   // Checkbox configuration to enable or disable isometric mode globally
   game.settings.register(MODULE_ID, "worldIsometricFlag", {
-    //name: "Enable Isometric Perspective",
-    name: game.i18n.localize('isometric-perspective.settings_main_name'),
-    //hint: "Toggle whether the isometric perspective is applied to the canvas.",
-    hint: game.i18n.localize('isometric-perspective.settings_main_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_main_name'), //name: "Enable Isometric Perspective",
+    hint: game.i18n.localize('isometric-perspective.settings_main_hint'), //hint: "Toggle whether the isometric perspective is applied to the canvas.",
     scope: "world",  // "world" = sync to db, "client" = local storage
     config: true,    // false if you dont want it to show in module config
     type: Boolean,   // You want the primitive class, e.g. Number, not the name of the class as a string
@@ -38,10 +36,8 @@ Hooks.once("init", function() {
   });
 
   game.settings.register(MODULE_ID, 'enableHeightAdjustment', {
-    //name: 'Enable Height Adjustment',
-    name: game.i18n.localize('isometric-perspective.settings_height_name'),
-    //hint: 'Toggle whether token sprites adjust their position to reflect their elevation',
-    hint: game.i18n.localize('isometric-perspective.settings_height_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_height_name'), //name: 'Enable Height Adjustment',
+    hint: game.i18n.localize('isometric-perspective.settings_height_hint'), //hint: 'Toggle whether token sprites adjust their position to reflect their elevation',
     scope: 'client',
     config: true,
     default: false,
@@ -50,10 +46,8 @@ Hooks.once("init", function() {
   });
 
   game.settings.register(MODULE_ID, 'enableTokenVisuals', {
-    //name: 'Enable Token Visuals',
-    name: game.i18n.localize('isometric-perspective.settings_visuals_name'),
-    //hint: 'Displays a circular shadow and a vertical red line to indicate token elevation. Requires "Enable Height Adjustment" to be active.',
-    hint: game.i18n.localize('isometric-perspective.settings_visuals_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_visuals_name'), //name: 'Enable Token Visuals',
+    hint: game.i18n.localize('isometric-perspective.settings_visuals_hint'), //hint: 'Displays a circular shadow and a vertical red line to indicate token elevation. Requires "Enable Height Adjustment" to be active.',
     scope: 'client',
     config: true,
     default: false,
@@ -62,10 +56,8 @@ Hooks.once("init", function() {
   });
 
   game.settings.register(MODULE_ID, 'enableOcclusionDynamicTile', {
-    //name: 'Enable Occlusion: Dynamic Tile',
-    name: game.i18n.localize('isometric-perspective.settings_dynamic_tile_name'),
-    //hint: '(BETA FEATURE. USE WITH CAUTION) Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
-    hint: game.i18n.localize('isometric-perspective.settings_dynamic_tile_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_dynamic_tile_name'), //name: 'Enable Occlusion: Dynamic Tile',
+    hint: game.i18n.localize('isometric-perspective.settings_dynamic_tile_hint'), //hint: '(BETA FEATURE. USE WITH CAUTION) Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
     scope: 'world',
     config: true,
     default: false,
@@ -74,10 +66,8 @@ Hooks.once("init", function() {
   });
 
   game.settings.register(MODULE_ID, 'enableAutoSorting', {
-    //name: 'Enable Automatic Token Sorting',
-    name: game.i18n.localize('isometric-perspective.settings_token_sort_name'),
-    //hint: '(BETA FEATURE. USE WITH CAUTION) Automatically adjusts the token\'s sort property value when moving it around the canvas.',
-    hint: game.i18n.localize('isometric-perspective.settings_token_sort_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_token_sort_name'), //name: 'Enable Automatic Token Sorting',
+    hint: game.i18n.localize('isometric-perspective.settings_token_sort_hint'), //hint: '(BETA FEATURE. USE WITH CAUTION) Automatically adjusts the token\'s sort property value when moving it around the canvas.',
     scope: 'world',
     config: true,
     default: false,
@@ -87,10 +77,8 @@ Hooks.once("init", function() {
 
   /*
   game.settings.register(MODULE_ID, 'enableOcclusionTokenSilhouette', {
-    //name: 'Enable Occlusion: Token Silhouette',
-    name: game.i18n.localize('isometric-perspective.settings_token_silhouette_name'),
-    //hint: 'Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
-    hint: game.i18n.localize('isometric-perspective.settings_token_silhouette_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_token_silhouette_name'), //name: 'Enable Occlusion: Token Silhouette',
+    hint: game.i18n.localize('isometric-perspective.settings_token_silhouette_hint'), //hint: 'Adjusts the visibility of tiles dynamically with the positioning of tokens. See how this feature works here.',
     scope: 'client',
     config: true,
     default: false,
@@ -100,10 +88,8 @@ Hooks.once("init", function() {
   */
   
   game.settings.register(MODULE_ID, 'debug', {
-    //name: 'Enable Debug Mode',
-    name: game.i18n.localize('isometric-perspective.settings_debug_name'),
-    //hint: 'Enables debug prints.',
-    hint: game.i18n.localize('isometric-perspective.settings_debug_hint'),
+    name: game.i18n.localize('isometric-perspective.settings_debug_name'), //name: 'Enable Debug Mode',
+    hint: game.i18n.localize('isometric-perspective.settings_debug_hint'), //hint: 'Enables debug prints.',
     scope: 'client',
     config: true,
     default: false,
@@ -123,10 +109,8 @@ Hooks.once("init", function() {
   // ------------- Registra os atalhos do módulo ------------- 
   
   game.keybindings.register(MODULE_ID, 'increaseTilesOpacity', {
-    //name: 'Increase Tile Opacity',
-    name: game.i18n.localize('isometric-perspective.keybindings_increase_tile_opacity'),
-    //hint: 'Increases the opacity of always visible tiles.',
-    hint: game.i18n.localize('isometric-perspective.keybindings_increase_tile_opacity_hint'),
+    name: game.i18n.localize('isometric-perspective.keybindings_increase_tile_opacity'), //name: 'Increase Tile Opacity',
+    hint: game.i18n.localize('isometric-perspective.keybindings_increase_tile_opacity_hint'), //hint: 'Increases the opacity of always visible tiles.',
     editable: [
         { key: 'NumpadAdd', modifiers: ['Control'] }
     ],
@@ -139,10 +123,8 @@ Hooks.once("init", function() {
   });
 
   game.keybindings.register(MODULE_ID, 'decreaseTilesOpacity', {
-    //name: 'Decrease Tile Opacity',
-    name: game.i18n.localize('isometric-perspective.keybindings_decrease_tile_opacity'),
-    //hint: 'Decreases the opacity of always visible tiles.',
-    hint: game.i18n.localize('isometric-perspective.keybindings_decrease_tile_opacity_hint'),
+    name: game.i18n.localize('isometric-perspective.keybindings_decrease_tile_opacity'), //name: 'Decrease Tile Opacity',
+    hint: game.i18n.localize('isometric-perspective.keybindings_decrease_tile_opacity_hint'), //hint: 'Decreases the opacity of always visible tiles.',
     editable: [
         { key: 'NumpadSubtract', modifiers: ['Control'] }
     ],

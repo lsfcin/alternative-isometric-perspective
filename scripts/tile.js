@@ -169,8 +169,7 @@ function updateAdjustOffsetButton(html) {
   adjustButton.style.padding = '1px 5px';
   adjustButton.style.border = '1px solid #888';
   adjustButton.style.borderRadius = '3px';
-  //adjustButton.title = 'Hold and drag to fine-tune X and Y';
-  adjustButton.title = game.i18n.localize('isometric-perspective.tile_artOffset_mouseover');
+  adjustButton.title = game.i18n.localize('isometric-perspective.tile_artOffset_mouseover'); //Hold and drag to fine-tune X and Y
 
   // Adds the fine adjustment logic
   let isAdjusting = false;

@@ -145,8 +145,8 @@ async function handleRenderTokenConfig(app, html, data) {
   // Add the button to reset the token settings
   const toggleButton = document.createElement("button");
   toggleButton.classList.add("toggle-alignment-lines");
-  toggleButton.textContent = "Reset Token Alignment Configuration";
-  toggleButton.title = "Click to toggle the alignment lines";
+  toggleButton.textContent = game.i18n.localize('isometric-perspective.token_resetAlignmentButton_name'); //Reset Token Alignment Configuration
+  toggleButton.title = game.i18n.localize('isometric-perspective.token_resetAlignmentButton_mouseover'); //Click to toggle the alignment lines
   html.find(".anchor-point").append(toggleButton);
 
   // Variables to control state
@@ -300,8 +300,7 @@ function createAdjustableButton(options) {
     border: '1px solid #888',
     borderRadius: '3px'
   });
-  //adjustButton.title = 'Hold and drag to fine-tune X and Y';
-  adjustButton.title = game.i18n.localize('isometric-perspective.token_artOffset_mouseover');
+  adjustButton.title = game.i18n.localize('isometric-perspective.token_artOffset_mouseover'); //Hold and drag to fine-tune X and Y
 
   // State variables for tracking drag operations
   let isAdjusting = false;
