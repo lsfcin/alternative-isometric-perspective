@@ -65,7 +65,7 @@ Token Magic FX _(some area effects, like sphere effects, are deformed)_
 Rideable _(if both mount and rider tokens have the same size, isn't possible to select the mount token)_
 
 - **Not working**  
-Image Hover _(render the art, but it moves with the pan of the canvas. You can only see it if you use hotkeys, and will not show the entire art)_
+Image Hover _(render the art, but it moves with the pan of the canvas. You can only see it if you use hotkeys, and will not show the entire art)_  
 LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
 ## Known Bugs

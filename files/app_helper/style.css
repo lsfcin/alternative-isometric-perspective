@@ -1,0 +1,129 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #eaeff2; /* Fundo claro */
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    width: 90vw;
+    max-width: 1200px;
+    height: 95vh;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+#pixiApp {
+    flex: 1;
+    height: 100%;
+    border-right: 1px solid #ddd;
+}
+
+.controls {
+    width: 300px;
+    padding: 20px;
+    background: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    box-sizing: border-box;
+    overflow-y: auto; /* Permite rolar os controles se necessário */
+}
+
+.controls label {
+    font-size: 14px;
+    color: #555;
+    display: flex;
+    justify-content: space-between; /* Ajusta os elementos na mesma linha */
+    align-items: center; /* Alinha verticalmente */
+    gap: 5px;
+}
+
+input[type="range"] {
+    flex: 1; /* Ocupa o espaço restante */
+    height: 5px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    --webkit-appearance: none; /* Remove estilo padrão no Safari */
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #007bff; /* Azul para o cursor */
+    cursor: pointer;
+}
+
+input[type="number"] {
+    width: 60px;
+    height: 30px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+    box-sizing: border-box;
+    font-size: 14px;
+    text-align: center;
+}
+
+button {
+    padding: 10px;
+    font-size: 14px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+}
+
+select {
+    width: 100%;
+    height: 30px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 14px;
+    color: #555;
+}
+
+.controls .sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+textarea#outputValues {
+    width: 100%;
+    resize: none; /* Impede o redimensionamento manual */
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: #f9f9f9;
+    color: #555;
+    box-sizing: border-box;
+    overflow-y: hidden; /* Remove barras de rolagem vertical */
+    transition: height 0.2s ease; /* Suaviza o redimensionamento */
+}
