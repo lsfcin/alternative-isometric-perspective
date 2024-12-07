@@ -22,6 +22,16 @@ export const PROJECTION_TYPES = {
     reverseSkewY:     0,
     ratio:            2
   },
+  'Overhead (√2:1)': {
+    rotation:     -45,
+    skewX:   9.735607,
+    skewY:   9.735607,
+    HudAngle:   35.26,
+    reverseRotation: 45,
+    reverseSkewX:     0,
+    reverseSkewY:     0,
+    ratio:  1.414213389
+  },
   'Projection (3:2)': {
     rotation:    -45,
     skewX:   11.3101,

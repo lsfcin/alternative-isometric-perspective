@@ -481,7 +481,7 @@ function updateOutputValues() {
         reverseRotation: 45,
         reverseSkewX:     0,
         reverseSkewY:     0,
-        ratio: ${diagonals.proportion.toFixed(6)},
+        ratio: ${diagonals.proportion.toFixed(9)},
         \n --- Extra Info ---
         Diagonals: ${diagonals.diagonal1.toFixed(2)} / ${diagonals.diagonal2.toFixed(2)},
         Approx. Ratio: about ${diagonals.readableRatio},
