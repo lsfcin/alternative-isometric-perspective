@@ -14,7 +14,7 @@ body {
     display: flex;
     flex-wrap: wrap;
     width: 90vw;
-    max-width: 1200px;
+    max-width: 1600px;
     height: 95vh;
     background: #ffffff;
     border-radius: 10px;
@@ -70,7 +70,7 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 input[type="number"] {
-    width: 60px;
+    width: 70px;
     height: 30px;
     border: 1px solid #ddd;
     border-radius: 5px;

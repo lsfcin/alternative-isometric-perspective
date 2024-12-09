@@ -1,6 +1,6 @@
 import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 import { applyIsometricPerspective, applyBackgroundTransformation } from './transform.js';
-import { updateIsometricConstants, PROJECTION_TYPES, DEFAULT_PROJECTION } from './consts.js';
+import { updateIsometricConstants, parseCustomProjection, updateCustomProjection, PROJECTION_TYPES, DEFAULT_PROJECTION, CUSTOM_PROJECTION } from './consts.js';
 
 export function registerSceneConfig() {
   Hooks.on("renderSceneConfig", handleRenderSceneConfig);
@@ -15,7 +15,7 @@ async function handleRenderSceneConfig(sceneConfig, html, data) {
   
   // Prepare data for the template
   const templateData = {
-    projectionTypes: Object.keys(PROJECTION_TYPES),
+    projectionTypes: [...Object.keys(PROJECTION_TYPES), 'Custom Projection'],
     currentProjection: currentProjection
   };
   
@@ -31,6 +31,8 @@ async function handleRenderSceneConfig(sceneConfig, html, data) {
   const bgCheckbox = html.find('input[name="flags.isometric-perspective.isometricBackground"]');
   const scaleSlider = html.find('input[name="flags.isometric-perspective.isometricScale"]');
   const scaleDisplay = html.find('.range-value');
+  let projectionSelect = html.find('select[name="flags.isometric-perspective.projectionType"]');
+  let customProjectionInput = html.find('input[name="flags.isometric-perspective.customProjection"]');
   
   // Set initial values
   isoCheckbox.prop("checked", sceneConfig.object.getFlag(MODULE_ID, "isometricEnabled"));
@@ -46,6 +48,21 @@ async function handleRenderSceneConfig(sceneConfig, html, data) {
     scaleDisplay.text(this.value);
   });
 
+  // Custom projection type handling
+  projectionSelect.on('change', function() {
+    const isCustom = $(this).val() === 'Custom Projection';
+    customProjectionInput.prop('disabled', !isCustom);
+    
+    // Set initial custom projection input if available
+    if (isCustom) {
+      const currentCustom = sceneConfig.object.getFlag(MODULE_ID, "customProjection");
+      customProjectionInput.val(currentCustom || '0, 0, 0, 0, 0, 0, 0, 0');
+    }
+  });
+
+  // Trigger initial state
+  projectionSelect.trigger('change');
+
   // Adiciona listener para atualizar o valor exibido do slider
   /*html.find('input[name="flags.isometric-perspective.isometricScale"]').on('input', function() {
     html.find('.range-value').text(this.value);
@@ -59,10 +76,28 @@ async function handleRenderSceneConfig(sceneConfig, html, data) {
   // Handler for the form submission
   html.find('form').on('submit', async (event) => {
     // Coleta os valores atuais dos controles
-    const newIsometric = isoCheckbox.prop("checked");
-    const newBackground = bgCheckbox.prop("checked");
-    const newScale = parseFloat(scaleSlider.val());
-    const newProjection = html.find('select[name="flags.isometric-perspective.projectionType"]').val();
+    let newIsometric = isoCheckbox.prop("checked");
+    let newBackground = bgCheckbox.prop("checked");
+    let newScale = parseFloat(scaleSlider.val());
+    let newProjection = html.find('select[name="flags.isometric-perspective.projectionType"]').val();
+    
+    // If custom projection is selected, validate and set the custom values
+    if (newProjection === 'Custom Projection') {
+      try {
+        let customInput = customProjectionInput.val();
+        let parsedCustom = parseCustomProjection(customInput);
+        
+        // Set the custom projection values
+        updateCustomProjection(parsedCustom);
+        
+        // Save the custom input string to scene flags
+        await sceneConfig.object.setFlag(MODULE_ID, "customProjection", customInput);
+      } catch (error) {
+        ui.notifications.error(error.message);
+        event.preventDefault();
+        return;
+      }
+    }
     
     // Atualiza as flags com os novos valores
     await sceneConfig.object.setFlag(MODULE_ID, "isometricEnabled", newIsometric);

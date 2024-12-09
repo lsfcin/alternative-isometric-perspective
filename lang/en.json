@@ -33,7 +33,8 @@
     "isometric-perspective.scene_scale_hint_2": " Grid tab can be used to shift/move the background.",
     "isometric-perspective.scene_dropdown_name": "Isometric Projection",
     "isometric-perspective.scene_dropdown_hint": "Choose an isometric projection type for this scene.",
-
+    "isometric-perspective.custom_projection_name": "Custom Isometric Values",
+    "isometric-perspective.custom_projection_hint": "Enter the values of a custom isometric projection obtained from the app website.",
 
     "isometric-perspective._comment": "Token Configuration",
     "isometric-perspective.token_enableIsometric_name": "Disable Isometric Token",

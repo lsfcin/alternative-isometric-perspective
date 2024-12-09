@@ -1,7 +1,7 @@
 import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
 
 // Define all projection types
-export const PROJECTION_TYPES = {
+export let PROJECTION_TYPES = {
   'True Isometric': {
     rotation:  -30,
     skewX:      30,
@@ -61,9 +61,19 @@ export const PROJECTION_TYPES = {
     reverseSkewX:     0,
     reverseSkewY:     0,
     ratio:       1.428148006742114
+  },
+  'Custom Projection': {
+    rotation: 0,
+    skewX: 0,
+    skewY: 0,
+    HudAngle: 0,
+    reverseRotation: 0,
+    reverseSkewX: 0,
+    reverseSkewY: 0,
+    ratio: 1
   }/*,
   'Fallout Style': {
-    rotation: -14,
+    rotation: -14, 39, 0, 14, 45, 0, 0, 1.732050808
     skewX:     39,
     skewY:      0,
     HudAngle:  14,
@@ -85,14 +95,22 @@ export const PROJECTION_TYPES = {
 };
 
 // Default projection type
-export const DEFAULT_PROJECTION = 'True Isometric';
+export let DEFAULT_PROJECTION = 'True Isometric';
+
+// Custom projection settings
+export let CUSTOM_PROJECTION = { ...PROJECTION_TYPES['Custom Projection'] };
 
 // Current isometric constants
 export let ISOMETRIC_CONST = { ...PROJECTION_TYPES[DEFAULT_PROJECTION] };
 
+// Função para atualizar CUSTOM_PROJECTION
+export function updateCustomProjection(newProjection) {
+  CUSTOM_PROJECTION = { ...newProjection };
+}
+
 // Function to convert degrees to radians for all angle properties
 function convertToRadians(projectionData) {
-  const angleProps = ['rotation', 'skewX', 'skewY', 'reverseRotation', 'reverseSkewX', 'reverseSkewY'];
+  const angleProps = ['rotation', 'skewX', 'skewY', 'HudAngle', 'reverseRotation', 'reverseSkewX', 'reverseSkewY'];
   const result = { ...projectionData };
   
   angleProps.forEach(prop => {
@@ -103,8 +121,34 @@ function convertToRadians(projectionData) {
 }
 
 export function updateIsometricConstants(projectionType) {
-  const projection = PROJECTION_TYPES[projectionType] || PROJECTION_TYPES[DEFAULT_PROJECTION];
+  let projection;
+  
+  if (projectionType === 'Custom Projection') {
+    projection = CUSTOM_PROJECTION;
+  } else {
+    projection = PROJECTION_TYPES[projectionType] || PROJECTION_TYPES[DEFAULT_PROJECTION];
+  }
+  
   ISOMETRIC_CONST = convertToRadians(projection);
+}
+
+export function parseCustomProjection(customInput) {
+  const values = customInput.split(',').map(val => parseFloat(val.trim()));
+  
+  if (values.length !== 8) {
+    throw new Error('Invalid custom projection input. Must be 8 comma-separated numbers.');
+  }
+  
+  return {
+    rotation: values[0],
+    skewX: values[1],
+    skewY: values[2],
+    HudAngle: values[3],
+    reverseRotation: values[4],
+    reverseSkewX: values[5],
+    reverseSkewY: values[6],
+    ratio: values[7]  // You might want to let the user specify this or keep it constant
+  };
 }
 
 

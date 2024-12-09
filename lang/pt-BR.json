@@ -33,6 +33,8 @@
     "isometric-perspective.scene_scale_hint_2": "Grade pode ser usado para mover o fundo.",
     "isometric-perspective.scene_dropdown_name": "Projeção Isométrica",
     "isometric-perspective.scene_dropdown_hint": "Escolha um tipo de projeção isométrica para esta cena.",
+    "isometric-perspective.custom_projection_name": "Projeção Isométrica Customizada",
+    "isometric-perspective.custom_projection_hint": "Insira os valores da projeção isométrica customizada obtida do website.",
     
     "isometric-perspective._comment": "Configuração de Tokens",
     "isometric-perspective.token_enableIsometric_name": "Desabilitar Token Isométrico",

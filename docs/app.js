@@ -473,22 +473,25 @@ function updateOutputValues() {
     const rectAngles = calculateRectangleAngles(rectangle);
 
     outputValues.value = `
+        Actual Values
+        --- Custom Isometric Values ---
+        ${sliders.rotation.value}, ${sliders.skewX.value}, ${sliders.skewY.value}, ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2).replace('-0', '0')}, 45, 0, 0, ${diagonals.proportion.toFixed(7)}
+    
         --- Scene Info ---
         rotation: ${sliders.rotation.value},
         skewX: ${sliders.skewX.value},
         skewY: ${sliders.skewY.value},
-        HudAngle: ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2)},
+        HudAngle: ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2).replace('-0', '0')},
         reverseRotation: 45,
         reverseSkewX:     0,
         reverseSkewY:     0,
         ratio: ${diagonals.proportion.toFixed(9)},
         
-        \n --- Extra Info ---
         Diagonals: ${diagonals.diagonal1.toFixed(2)} / ${diagonals.diagonal2.toFixed(2)},
         Approx. Ratio: about ${diagonals.readableRatio},
         Blue-Red Lines Angle: ${angleBetweenLines.toFixed(2)},
-        Adjusted Angle: ${(45 - angleBetweenLines).toFixed(2)}
-        Diamond Angles: ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2)} / ${(rectAngles[1]/2 - angleBetweenLines).toFixed(2)},
+        Adjusted Angle: ${(45 - angleBetweenLines).toFixed(2).replace('-0', '0')}
+        Diamond Angles: ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2).replace('-0', '0')} / ${(rectAngles[1]/2 - angleBetweenLines).toFixed(2).replace('-0', '0')},
     `.replace(/^ +/gm, '').trim(); //.replace(/\s+/g, '').trim() Remove espaços desnecessários
 
     adjustTextareaHeight(outputValues); // Ajusta a altura após atualizar o texto
