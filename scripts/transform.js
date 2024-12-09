@@ -151,7 +151,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
         sy = 1;
     }
     object.mesh.width  = Math.abs(sx * scaleX * gridSize * isoScale * Math.sqrt(2))
-    object.mesh.height = Math.abs(sy * scaleY * gridSize * isoScale * Math.sqrt(2) * Math.sqrt(3))
+    object.mesh.height = Math.abs(sy * scaleY * gridSize * isoScale * Math.sqrt(2) * ISOMETRIC_CONST.ratio)
     
     // Elevation math
     offsetX += elevation * (1/gridDistance) * 100 * Math.sqrt(2) * (1/scaleX);

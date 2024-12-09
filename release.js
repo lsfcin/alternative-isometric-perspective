@@ -3,6 +3,7 @@ const fs = require('fs');
 const { execSync } = require('child_process');
 const path = require('path');
 const archiver = require('archiver');
+const readline = require('readline');  // Módulo para interação com o usuário
 
 // Lê o arquivo module.json
 const moduleJsonPath = 'module.json';
@@ -58,6 +59,19 @@ function createZip() {
     archive.finalize();
 }
 
+// Função para pedir o nome/descrição do release
+function askReleaseInfo(callback) {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    rl.question('Digite um nome ou descrição para o release: ', (info) => {
+        rl.close();
+        callback(info);  // Passa a info para o callback
+    });
+}
+
 // Principal
 console.log(`Iniciando release da versão ${version}...`);
 
@@ -74,15 +88,20 @@ if (fs.existsSync(zipPath)) {
 // 3. Cria o novo arquivo ZIP
 createZip();
 
-// 4. Commit das alterações
-execCommand('git add .');
-execCommand(`git commit -m "Release v${version}"`);
+// Solicita informações sobre o release e executa o commit com a mensagem personalizada
+askReleaseInfo((info) => {
+    const releaseMessage = `Release v${version} - ${info}`;
 
-// 5. Cria e push da tag
-execCommand(`git tag -a v${version} -m "Release v${version}"`);
-execCommand('git push');
-execCommand('git push --tags');
+    // 4. Commit das alterações
+    execCommand('git add .');
+    execCommand(`git commit -m "${releaseMessage}"`);  // Commit com a descrição fornecida
 
-console.log(`\nRelease v${version} iniciada com sucesso!`);
-console.log('O GitHub Actions irá criar automaticamente o release com os arquivos.');
-console.log('Verifique o progresso em: https://github.com/marceloabner/isometric-perspective/actions');
+    // 5. Cria e push da tag
+    execCommand(`git tag -a v${version} -m "${releaseMessage}"`);  // Tag com a mesma mensagem
+    execCommand('git push');
+    execCommand('git push --tags');
+
+    console.log(`\n${releaseMessage}`);
+    console.log('O GitHub Actions irá criar automaticamente o release com os arquivos.');
+    console.log('Verifique o progresso em: https://github.com/marceloabner/isometric-perspective/actions');
+});

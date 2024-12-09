@@ -482,12 +482,13 @@ function updateOutputValues() {
         reverseSkewX:     0,
         reverseSkewY:     0,
         ratio: ${diagonals.proportion.toFixed(9)},
+        
         \n --- Extra Info ---
         Diagonals: ${diagonals.diagonal1.toFixed(2)} / ${diagonals.diagonal2.toFixed(2)},
         Approx. Ratio: about ${diagonals.readableRatio},
         Blue-Red Lines Angle: ${angleBetweenLines.toFixed(2)},
         Adjusted Angle: ${(45 - angleBetweenLines).toFixed(2)}
-        Rectangle Angle: ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2)} / ${(rectAngles[1]/2 - angleBetweenLines).toFixed(2)},
+        Diamond Angles: ${(rectAngles[0]/2 - angleBetweenLines).toFixed(2)} / ${(rectAngles[1]/2 - angleBetweenLines).toFixed(2)},
     `.replace(/^ +/gm, '').trim(); //.replace(/\s+/g, '').trim() Remove espaços desnecessários
 
     adjustTextareaHeight(outputValues); // Ajusta a altura após atualizar o texto
