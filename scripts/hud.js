@@ -27,17 +27,14 @@ function handleRenderTileHUD(hud, html, data) {
 }
 
 
-// Function to calculate the isometric position
+// Function to calculate the isometric position, it is like an isoToCartesian
 export function calculateIsometricPosition(x, y) {
   // Get rotation values
-  const rotation = ISOMETRIC_CONST.HudAngle; //ISOMETRIC_CONST.rotation;  // em graus
-
-  // Convert Degrees of Degrees to Radians
-  const rotationRad = rotation * (Math.PI / 180);
+  const rotation = ISOMETRIC_CONST.HudAngle; //ISOMETRIC_CONST.rotation;  // in rad
 
   // Apply rotation to the distorted coordinates
-  const isoX =        (x + y) * Math.cos(rotationRad);   // Aplique rotação ao eixo X
-  const isoY = (-1) * (x - y) * Math.sin(rotationRad); // Aplique rotação ao eixo Y
+  const isoX =        (x + y) * Math.cos(rotation); // Aplique rotação ao eixo X
+  const isoY = (-1) * (x - y) * Math.sin(rotation); // Aplique rotação ao eixo Y
 
   return { x: isoX, y: isoY };
 }
