@@ -15,7 +15,7 @@ async function handleRenderSceneConfig(sceneConfig, html, data) {
   
   // Prepare data for the template
   const templateData = {
-    projectionTypes: [...Object.keys(PROJECTION_TYPES), 'Custom Projection'],
+    projectionTypes: [...Object.keys(PROJECTION_TYPES)],
     currentProjection: currentProjection
   };
   
@@ -150,6 +150,19 @@ function handleUpdateScene(scene, changes) {
     const shouldTransformBackground = scene.getFlag(MODULE_ID, "isometricBackground") ?? false;
     const projectionType = scene.getFlag(MODULE_ID, "projectionType") ?? DEFAULT_PROJECTION;
 
+    // logic for custom projection
+    if (projectionType === 'Custom Projection') {
+      const customProjectionValue = scene.getFlag(MODULE_ID, "customProjection");
+      if (customProjectionValue) {
+        try {
+          const parsedCustom = parseCustomProjection(customProjectionValue);
+          updateCustomProjection(parsedCustom);
+        } catch (error) {
+          console.error("Error parsing custom projection:", error);
+        }
+      }
+    }
+
     requestAnimationFrame(() => {
       updateIsometricConstants(projectionType);
       applyIsometricPerspective(scene, isIsometric);
@@ -173,6 +186,19 @@ async function handleCanvasReady(canvas) {
     await scene.setFlag(MODULE_ID, "projectionType", projectionType);
   }
 
+  // logic to load and apply custom projection
+  if (projectionType === 'Custom Projection') {
+    const customProjectionValue = scene.getFlag(MODULE_ID, "customProjection");
+    if (customProjectionValue) {
+      try {
+        const parsedCustom = parseCustomProjection(customProjectionValue);
+        updateCustomProjection(parsedCustom);
+      } catch (error) {
+        console.error("Error parsing custom projection:", error);
+      }
+    }
+  }
+  
   updateIsometricConstants(projectionType);
   applyIsometricPerspective(scene, isSceneIsometric);
   applyBackgroundTransformation(scene, isSceneIsometric, shouldTransformBackground);
