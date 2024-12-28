@@ -1,4 +1,4 @@
-import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
+import { MODULE_ID, DEBUG_PRINT } from './main.js';
 
 export function registerDynamicTileConfig() {
   const enableOcclusionDynamicTile = game.settings.get(MODULE_ID, "enableOcclusionDynamicTile");
@@ -64,7 +64,7 @@ export function registerDynamicTileConfig() {
 
   // ---------------------- TILE ----------------------
   Hooks.on('createTile', (tile, data, options, userId) => {
-    tile.setFlag(MODULE_ID, 'linkedWallId', null);
+    tile.setFlag(MODULE_ID, 'linkedWallIds', []); // Changed to array
   });
   Hooks.on('updateTile', (tileDocument, change, options, userId) => {
     if ('flags' in change && MODULE_ID in change.flags) {
@@ -134,9 +134,10 @@ export function registerDynamicTileConfig() {
     // Verifica se a mudança é relacionada ao estado da porta
     if ('ds' in change) {
       // Procura por tiles que têm esta wall vinculada
-      const linkedTiles = canvas.tiles.placeables.filter(tile => 
-        tile.document.getFlag(MODULE_ID, 'linkedWallId') === wallDocument.id
-      );
+      const linkedTiles = canvas.tiles.placeables.filter(tile => {
+        const linkedWallIds = tile.document.getFlag(MODULE_ID, 'linkedWallIds') || [];
+        return linkedWallIds.includes(wallDocument.id);
+      });
       
       // Se encontrou algum tile vinculado, atualiza os elementos visíveis
       if (linkedTiles.length > 0) {
@@ -175,7 +176,7 @@ let tilesLayer;
 let tokensLayer;
 let tilesOpacity = 1.0;
 let tokensOpacity = 1.0;
-let selectedWallId = null;
+let selectedWallIds = []; // Changed to array
 let lastControlledToken = null;
 
 
@@ -230,19 +231,23 @@ export function decreaseTokensOpacity() {
 
 
 
-function cloneTileSprite(tile, wall) {
+function cloneTileSprite(tile, walls) {
   const sprite = new PIXI.Sprite(tile.texture);
   sprite.position.set(tile.position.x, tile.position.y);
   sprite.anchor.set(tile.anchor.x, tile.anchor.y);
   sprite.angle = tile.angle;
   sprite.scale.set(tile.scale.x, tile.scale.y);
   
-  // Verifica se a wall é uma porta e está aberta
-  let alpha = tile.alpha * tilesOpacity;
-  if (wall && (wall.document.door === 1 || wall.document.door === 2) && wall.document.ds === 1) {
-    return null; // Não cria o sprite se a porta estiver aberta
+  // Check if any linked wall is a closed door
+  const hasClosedDoor = walls.some(wall => 
+    wall && (wall.document.door === 1 || wall.document.door === 2) && wall.document.ds === 1
+  );
+  
+  if (hasClosedDoor) {
+    return null; // Doesn't create the sprite if the door is open
   }
   
+  let alpha = tile.alpha * tilesOpacity;
   sprite.alpha = alpha;
   sprite.eventMode = 'passive';
   sprite.originalTile = tile;
@@ -297,68 +302,74 @@ function getInitialToken() {
 function updateAlwaysVisibleElements() {
   if (!canvas.ready || !alwaysVisibleContainer) return;
 
-  // Limpa as camadas
+  // Clear layers
   tilesLayer.removeChildren();
   tokensLayer.removeChildren();
 
-  // Obtém o token selecionado
+  // Get the selected token
   const controlled = getInitialToken();
   if (!controlled) return;
 
-  // Coleta tiles com paredes vinculadas
-  const tilesWithLinkedWalls = canvas.tiles.placeables.filter(tile => 
-    tile.document.getFlag(MODULE_ID, 'linkedWallId') !== null
-  );
+  // Collect Tiles with linked walls
+  const tilesWithLinkedWalls = canvas.tiles.placeables.filter(tile => {
+    // Usa a função auxiliar para garantir que temos um array
+    const linkedWallIds = ensureWallIdsArray(tile.document.getFlag(MODULE_ID, 'linkedWallIds'));
+    return linkedWallIds.length > 0;
+  });
 
-  // Atualiza tiles
+  // Update tiles
   tilesWithLinkedWalls.forEach(tile => {
-    const linkedWallId = tile.document.getFlag(MODULE_ID, 'linkedWallId');
-    const wall = canvas.walls.get(linkedWallId);
+    const linkedWallIds = ensureWallIdsArray(tile.document.getFlag(MODULE_ID, 'linkedWallIds'));
+    const walls = linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
     
-    // Verifica se o token pode ver a parede vinculada
-    if (wall && canTokenSeeWall(controlled, wall)) {
-      const clonedSprite = cloneTileSprite(tile.mesh, wall);
-      // Só adiciona o sprite se ele foi criado (não é null)
+    // Check if token can see any of the linked walls
+    const canSeeAnyWall = walls.some(wall => canTokenSeeWall(controlled, wall));
+
+    if (canSeeAnyWall) {
+      const clonedSprite = cloneTileSprite(tile.mesh, walls);
       if (clonedSprite) {
         tilesLayer.addChild(clonedSprite);
       }
     }
   });
 
-  // Adiciona sempre o token controlado
+  
+  
+  // Always add the controlled token
   const controlledTokenSprite = cloneTokenSprite(controlled.mesh);
-  if (controlledTokenSprite) {  // Verifica se o sprite foi criado com sucesso
+  if (controlledTokenSprite) {  // Check if Sprite was created successfully
     tokensLayer.addChild(controlledTokenSprite);
   }
 
-  // Adiciona tokens que o token controlado pode ver
+  // Add tokens that the controlled token can see
   canvas.tokens.placeables.forEach(token => {
-    if (!token.mesh) return;  // Pula se o mesh não existir
-    if (token.id === controlled.id) return; // Pula o token controlado (já foi adicionado)
+    if (!token.mesh) return;  // Skip if the mesh does not exist
+    if (token.id === controlled.id) return; // Skip the controlled token
 
-    // Verifica se o token pode ser visto
+    // Check if the token can be seen
     if (canTokenSeeToken(controlled, token)) {
-      // Verifica se o token está atrás de algum tile vinculado a uma parede
+      // Check if the token is behind some tile linked to a wall
       const behindTiles = tilesWithLinkedWalls.filter(tile => {
-        const linkedWallId = tile.document.getFlag(MODULE_ID, 'linkedWallId');
-        const wall = canvas.walls.get(linkedWallId);
-        
-        if (!wall) return false;
+        const linkedWallIds = tile.document.getFlag(MODULE_ID, 'linkedWallIds') || [];
+        const walls = linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
 
-        // Se a wall for uma porta e estiver aberta, não considera o token como "atrás"
-        if ((wall.document.door === 1 || wall.document.door === 2) && wall.document.ds === 1) {
-          return false;
-        }
-        
-        // Verifica se o token está acima da parede
-        return isTokenInFrontOfWall(token, wall);
+        // Check if token is behind any of the linked walls
+        return walls.some(wall => {
+          if (!wall) return false;
+
+          // If the wall is a door and is open, do not consider token as "behind"
+          if ((wall.document.door === 1 || wall.document.door === 2) && wall.document.ds === 1) {
+            return false;
+          }
+
+          // Check if the token is above the wall
+          return isTokenInFrontOfWall(token, wall);
+        });
       });
 
       const tokenSprite = cloneTokenSprite(token.mesh);
-      
-      // Se estiver atrás de algum tile, ajusta a posição
       if (behindTiles.length > 0) {
-        tokenSprite.zIndex = -1; // Renderiza atrás
+        tokenSprite.zIndex = -1; // Rendering behind, if behind any tile
       }
 
       tokensLayer.addChild(tokenSprite);
@@ -372,6 +383,18 @@ function updateAlwaysVisibleElements() {
   tokensLayer.sortableChildren = true;
 }
 
+function ensureWallIdsArray(linkedWallIds) {
+  if (!linkedWallIds) return [];
+  if (Array.isArray(linkedWallIds)) return linkedWallIds;
+  if (typeof linkedWallIds === 'string') {
+    // Se for uma string vazia ou só com espaços, retorna array vazio
+    if (!linkedWallIds.trim()) return [];
+    // Divide a string por vírgulas e limpa os espaços
+    return linkedWallIds.split(',').map(id => id.trim()).filter(id => id);
+  }
+  // Se não for nenhum dos casos acima, retorna array vazio
+  return [];
+}
 
 
 
@@ -528,50 +551,27 @@ function canTokenSeeWall(token, wall) {
   const tokenPosition = token.center;
 
   for (const point of wallPoints) {
-    const ray = new Ray(tokenPosition, point);
-    const collision = CONFIG.Canvas.polygonBackends.sight.testCollision(ray.B, ray.A, { 
-      mode: "any", 
-      type: "sight" 
-    });
-    
-    // Se não houver colisão com nenhum ponto, o token pode ver a parede
-    if (!collision) {
-      return true;
+    // Usa o testVisibility do token para verificar se ele pode ver o ponto
+    if (canvas.visibility?.testVisibility(point, { tolerance: 2 })) {
+      const ray = new Ray(tokenPosition, point);
+      const collision = CONFIG.Canvas.polygonBackends.sight.testCollision(ray.B, ray.A, { 
+        mode: "any", 
+        type: "sight" 
+      });
+      
+      // Se não houver colisão com algum ponto dentro do alcance, o token pode ver a parede
+      if (!collision) {
+        return true
+      }
     }
   }
 
   return false;
 }
 
-
-
 function canTokenSeeToken(sourceToken, targetToken) {
   if (!sourceToken || !targetToken) return false;
-
-  const ray = new Ray(sourceToken.center, targetToken.center);
-  const collision = CONFIG.Canvas.polygonBackends.sight.testCollision(ray.A, ray.B, { 
-    mode: "any", 
-    type: "sight" 
-  });
   
-  return !collision;
+  // Usa o canvas testVisibility no token alvo como verificação
+  return canvas.visibility?.testVisibility(targetToken.center, { tolerance: 2 });
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

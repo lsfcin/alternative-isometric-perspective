@@ -1,4 +1,4 @@
-import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
+import { MODULE_ID, DEBUG_PRINT } from './main.js';
 import { applyIsometricTransformation } from './transform.js';
 
 export function registerTileConfig() {
@@ -10,6 +10,9 @@ export function registerTileConfig() {
 }
 
 async function handleRenderTileConfig(app, html, data) {
+  const linkedWallIds = app.object.getFlag(MODULE_ID, 'linkedWallIds') || [];
+  const wallIdsString = Array.isArray(linkedWallIds) ? linkedWallIds.join(', ') : linkedWallIds;
+
   // Carrega o template HTML para a nova aba
   const tabHtml = await renderTemplate("modules/isometric-perspective/templates/tile-config.html", {
     isoDisabled: app.object.getFlag(MODULE_ID, 'isoTileDisabled') ?? 1,
@@ -17,7 +20,7 @@ async function handleRenderTileConfig(app, html, data) {
     isFlipped: app.object.getFlag(MODULE_ID, 'tokenFlipped') ?? false,
     offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
     offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0,
-    linkedWallId: app.object.getFlag(MODULE_ID, 'linkedWallId') || null
+    linkedWallIds: wallIdsString
   });
 
   // Adiciona a nova aba ao menu
@@ -46,11 +49,11 @@ async function handleRenderTileConfig(app, html, data) {
   // Inicializa os valores dos controles
   const isoTileCheckbox = html.find('input[name="flags.isometric-perspective.isoTileDisabled"]');
   const flipCheckbox = html.find('input[name="flags.isometric-perspective.tokenFlipped"]');
-  const linkedWallInput = html.find('input[name="flags.isometric-perspective.linkedWallId"]');
+  const linkedWallInput = html.find('input[name="flags.isometric-perspective.linkedWallIds"]');
   
   isoTileCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTileDisabled"));
   flipCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "tokenFlipped"));
-  linkedWallInput.val(app.object.getFlag(MODULE_ID, 'linkedWallId') || '');
+  linkedWallInput.val(wallIdsString);
   
   // Adiciona listener para atualizar o valor exibido do slider
   html.find('.scale-slider').on('input', function() {
@@ -74,10 +77,13 @@ async function handleRenderTileConfig(app, html, data) {
     }
 
     // dynamictile.js linked wall logic
-    if (linkedWallInput.val()) {
-      await app.object.setFlag(MODULE_ID, 'linkedWallId', linkedWallInput.val());
+    const wallIdsValue = linkedWallInput.val();
+    if (wallIdsValue) {
+      // Convertemos a string em array antes de salvar
+      const wallIdsArray = wallIdsValue.split(',').map(id => id.trim()).filter(id => id);
+      await app.object.setFlag(MODULE_ID, 'linkedWallIds', wallIdsArray);
     } else {
-      await app.object.unsetFlag(MODULE_ID, 'linkedWallId');
+      await app.object.setFlag(MODULE_ID, 'linkedWallIds', []);
     }
   });
 
@@ -88,11 +94,17 @@ async function handleRenderTileConfig(app, html, data) {
     Object.values(ui.windows).filter(w => w instanceof TileConfig).forEach(j => j.minimize());
     canvas.walls.activate();
 
-    Hooks.once('controlWall', (wall) => {
+    Hooks.once('controlWall', async (wall) => {
       const selectedWallId = wall.id.toString();
-      app.object.setFlag(MODULE_ID, 'linkedWallId', selectedWallId);
-      html.find('input[name="flags.isometric-perspective.linkedWallId"]').val(selectedWallId);
+      const currentWallIds = app.object.getFlag(MODULE_ID, 'linkedWallIds') || [];
       
+      // Adiciona o novo ID apenas se ele ainda não estiver na lista
+      if (!currentWallIds.includes(selectedWallId)) {
+        const newWallIds = [...currentWallIds, selectedWallId];
+        await app.object.setFlag(MODULE_ID, 'linkedWallIds', newWallIds);
+        html.find('input[name="flags.isometric-perspective.linkedWallIds"]').val(newWallIds.join(', '));
+      }
+
       // Retorna a janela a posição original e ativa a camada TileLayer
       Object.values(ui.windows).filter(w => w instanceof TileConfig).forEach(j => j.maximize());
       canvas.tiles.activate();
@@ -106,9 +118,9 @@ async function handleRenderTileConfig(app, html, data) {
     });
   });
 
-  html.find('button.clear-wall').click(() => {
-    app.object.setFlag(MODULE_ID, 'linkedWallId', null);
-    html.find('input[name="flags.isometric-perspective.linkedWallId"]').val('');
+  html.find('button.clear-wall').click(async () => {
+    await app.object.setFlag(MODULE_ID, 'linkedWallIds', []);
+    html.find('input[name="flags.isometric-perspective.linkedWallIds"]').val('');
 
     // Keep the tab selected
     requestAnimationFrame(() => {
