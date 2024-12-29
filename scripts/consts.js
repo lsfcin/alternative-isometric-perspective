@@ -72,15 +72,15 @@ export let PROJECTION_TYPES = {
     reverseSkewY: 0,
     ratio: 1
   }/*,
-  'Fallout Style': {
-    rotation: -14, 39, 0, 14, 45, 0, 0, 1.732050808
+  'Game: Fallout Style': { // -14, 39, 0, 14, 0, -39.5, 21.75, 2.0965436
+    rotation: -14,
     skewX:     39,
     skewY:      0,
     HudAngle:  14,
-    reverseRotation: 45,
-    reverseSkewX:     0,
-    reverseSkewY:     0,
-    ratio:       Math.sqrt(3)
+    reverseRotation: 0,
+    reverseSkewX:    -39.5,
+    reverseSkewY:    21.75,
+    ratio:       2.0965436
   },
   'Earthbound / Paperboy Style': {
     rotation:   0,
