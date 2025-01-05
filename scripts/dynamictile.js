@@ -66,10 +66,15 @@ export function registerDynamicTileConfig() {
   Hooks.on('createTile', (tile, data, options, userId) => {
     tile.setFlag(MODULE_ID, 'linkedWallIds', []); // Changed to array
   });
-  Hooks.on('updateTile', (tileDocument, change, options, userId) => {
+  Hooks.on('updateTile', async (tileDocument, change, options, userId) => {
     if ('flags' in change && MODULE_ID in change.flags) {
-      updateAlwaysVisibleElements();
+      const currentFlags = change.flags[MODULE_ID];
+      if ('linkedWallIds' in currentFlags) {
+        const validArray = ensureWallIdsArray(currentFlags.linkedWallIds);
+        await tileDocument.setFlag(MODULE_ID, 'linkedWallIds', validArray);
+      }
     }
+    updateAlwaysVisibleElements();
   });
   Hooks.on('refreshTile', (tile) => {
     updateAlwaysVisibleElements();
@@ -135,8 +140,8 @@ export function registerDynamicTileConfig() {
     if ('ds' in change) {
       // Procura por tiles que têm esta wall vinculada
       const linkedTiles = canvas.tiles.placeables.filter(tile => {
-        const linkedWallIds = tile.document.getFlag(MODULE_ID, 'linkedWallIds') || [];
-        return linkedWallIds.includes(wallDocument.id);
+        const walls = getLinkedWalls(tile);
+        return walls.some(wall => wall && wall.id === wallDocument.id);
       });
       
       // Se encontrou algum tile vinculado, atualiza os elementos visíveis
@@ -231,6 +236,13 @@ export function decreaseTokensOpacity() {
 
 
 
+
+
+
+
+
+
+
 function cloneTileSprite(tile, walls) {
   const sprite = new PIXI.Sprite(tile.texture);
   sprite.position.set(tile.position.x, tile.position.y);
@@ -313,14 +325,13 @@ function updateAlwaysVisibleElements() {
   // Collect Tiles with linked walls
   const tilesWithLinkedWalls = canvas.tiles.placeables.filter(tile => {
     // Usa a função auxiliar para garantir que temos um array
-    const linkedWallIds = ensureWallIdsArray(tile.document.getFlag(MODULE_ID, 'linkedWallIds'));
-    return linkedWallIds.length > 0;
+    const walls = getLinkedWalls(tile);
+    return walls.length > 0;
   });
 
   // Update tiles
   tilesWithLinkedWalls.forEach(tile => {
-    const linkedWallIds = ensureWallIdsArray(tile.document.getFlag(MODULE_ID, 'linkedWallIds'));
-    const walls = linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
+    const walls = getLinkedWalls(tile);
     
     // Check if token can see any of the linked walls
     const canSeeAnyWall = walls.some(wall => canTokenSeeWall(controlled, wall));
@@ -350,8 +361,7 @@ function updateAlwaysVisibleElements() {
     if (canTokenSeeToken(controlled, token)) {
       // Check if the token is behind some tile linked to a wall
       const behindTiles = tilesWithLinkedWalls.filter(tile => {
-        const linkedWallIds = tile.document.getFlag(MODULE_ID, 'linkedWallIds') || [];
-        const walls = linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
+        const walls = getLinkedWalls(tile);
 
         // Check if token is behind any of the linked walls
         return walls.some(wall => {
@@ -368,11 +378,12 @@ function updateAlwaysVisibleElements() {
       });
 
       const tokenSprite = cloneTokenSprite(token.mesh);
-      if (behindTiles.length > 0) {
-        tokenSprite.zIndex = -1; // Rendering behind, if behind any tile
+      if (tokenSprite) {
+        if (behindTiles.length > 0) {
+          tokenSprite.zIndex = -1; // Rendering behind, if behind any tile
+        }
+        tokensLayer.addChild(tokenSprite);
       }
-
-      tokensLayer.addChild(tokenSprite);
     }
   });
 
@@ -384,16 +395,55 @@ function updateAlwaysVisibleElements() {
 }
 
 function ensureWallIdsArray(linkedWallIds) {
+  // Se for undefined ou null, retorna array vazio
   if (!linkedWallIds) return [];
+
+  // Se já for um array, retorna ele mesmo
   if (Array.isArray(linkedWallIds)) return linkedWallIds;
+
+  // Se for uma string
   if (typeof linkedWallIds === 'string') {
     // Se for uma string vazia ou só com espaços, retorna array vazio
     if (!linkedWallIds.trim()) return [];
     // Divide a string por vírgulas e limpa os espaços
     return linkedWallIds.split(',').map(id => id.trim()).filter(id => id);
   }
+
+  // Se for um objeto
+  if (typeof linkedWallIds === 'object') {
+    try {
+      // Tenta converter para string e depois para array
+      return JSON.stringify(linkedWallIds)
+        .replace(/[{}\[\]"]/g, '')
+        .split(',')
+        .map(id => id.trim())
+        .filter(id => id);
+    } catch {
+      return [];
+    }
+  }
+
   // Se não for nenhum dos casos acima, retorna array vazio
   return [];
+}
+
+// Função para obter walls linkadas a um tile de forma segura
+function getLinkedWalls(tile) {
+  if (!tile || !tile.document) return [];
+  const linkedWallIds = ensureWallIdsArray(tile.document.getFlag(MODULE_ID, 'linkedWallIds'));
+  return linkedWallIds.map(id => canvas.walls.get(id)).filter(Boolean);
+}
+
+// Função auxiliar para verificar e corrigir flags existentes
+async function validateAndFixTileFlags(tile) {
+  const currentLinkedWalls = tile.getFlag(MODULE_ID, 'linkedWallIds');
+  const validArray = ensureWallIdsArray(currentLinkedWalls);
+  
+  // Se o valor atual for diferente do array válido, atualiza
+  if (JSON.stringify(currentLinkedWalls) !== JSON.stringify(validArray)) {
+    await tile.setFlag(MODULE_ID, 'linkedWallIds', validArray);
+  }
+  return validArray;
 }
 
 
