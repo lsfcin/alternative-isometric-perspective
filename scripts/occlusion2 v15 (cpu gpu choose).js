@@ -343,7 +343,7 @@ void main(void) {
 
 function createOcclusionMask(token, intersectingTiles) {
 	const gpu = 0;
-	const chunkSize = 8;
+	const chunkSize = 2;
 	// 1  = pixel perfect, but cpu intensive;
 	// 2  = okish, still cpu intensive with a lot of tokens on scene, kinda pixelated, but work for simple tiles
 	// 3  = still heavy on performance, but only with a lot of tokens, pixelated, works only on tiles with straight lines
@@ -393,8 +393,8 @@ function createOcclusionMask_gpu(token, intersectingTiles) {
 
 
 
-
-function createOcclusionMask_cpu(token, intersectingTiles, chunkSize = 2) {
+// 1/10 original terrible performance
+function createOcclusionMask_cpu1(token, intersectingTiles, chunkSize = 2) {
 	const maskGraphics = new PIXI.Graphics();
 	maskGraphics.beginFill(0xffffff);
 
@@ -487,20 +487,681 @@ function createOcclusionMask_cpu(token, intersectingTiles, chunkSize = 2) {
 	return maskGraphics;
 }
 
-// Pode chamar o código de duas maneiras agora, 
-// Usando o tamanho de chunk padrão (1):
-//     createOcclusionMask(token, intersectingTiles)
-// Ou especificando um tamanho de chunk diferente:
-//     createOcclusionMask(token, intersectingTiles, 2)
+// 2/10 slightly better cpu version
+function createOcclusionMask_cpu2(token, intersectingTiles, chunkSize = 1) {
+	const maskGraphics = new PIXI.Graphics();
+	maskGraphics.beginFill(0xffffff);
 
+	// Get the current scene scale
+	const stage = token.mesh.parent;
+	const sceneScale = stage?.scale?.x ?? 1;
+	
+	// Adjust chunk size based on scene scale
+	const adjustedChunkSize = chunkSize / sceneScale;
 
+	// Create a single reusable canvas with maximum expected size
+	const maxSize = Math.max(
+			...intersectingTiles.map(tile => Math.max(tile.mesh.width, tile.mesh.height))
+	);
+	const tempCanvas = document.createElement('canvas');
+	tempCanvas.width = maxSize;
+	tempCanvas.height = maxSize;
+	const tempCtx = tempCanvas.getContext('2d', { 
+			willReadFrequently: true,
+			alpha: true 
+	});
 
+	// Pre-allocate typed arrays for better performance
+	const tokenBounds = token.mesh.getBounds(false, undefined); // Get bounds without transform
+	const rectangles = [];
 
+	for (const tile of intersectingTiles) {
+			const tileBounds = tile.mesh.getBounds(false, undefined); // Get bounds without transform
+			
+			// Calculate intersection area in global space
+			const x = Math.max(tokenBounds.x, tileBounds.x);
+			const y = Math.max(tokenBounds.y, tileBounds.y);
+			const width = Math.min(tokenBounds.x + tokenBounds.width, tileBounds.x + tileBounds.width) - x;
+			const height = Math.min(tokenBounds.y + tokenBounds.height, tileBounds.y + tileBounds.height) - y;
+			
+			if (width <= 0 || height <= 0) continue;
 
+			const tileTexture = tile.texture?.baseTexture?.resource?.source;
+			if (!tileTexture || tileTexture.width <= 0 || tileTexture.height <= 0) continue;
 
+			// Calculate source and destination rectangles
+			const sourceX = (x - tileBounds.x) * (tileTexture.width / tileBounds.width);
+			const sourceY = (y - tileBounds.y) * (tileTexture.height / tileBounds.height);
+			const sourceWidth = width * (tileTexture.width / tileBounds.width);
+			const sourceHeight = height * (tileTexture.height / tileBounds.height);
 
+			// Clear only the required portion
+			tempCtx.clearRect(0, 0, width, height);
+			
+			// Draw the relevant portion of the tile
+			tempCtx.drawImage(tileTexture,
+					sourceX, sourceY, sourceWidth, sourceHeight,
+					0, 0, width, height
+			);
 
+			// Get image data for the intersection area
+			const imageData = tempCtx.getImageData(0, 0, width, height);
+			const dataU32 = new Uint32Array(imageData.data.buffer);
 
+			// Process chunks in world space
+			const chunksX = Math.ceil(width / adjustedChunkSize);
+			const chunksY = Math.ceil(height / adjustedChunkSize);
+
+			for (let cy = 0; cy < chunksY; cy++) {
+					const yPos = cy * adjustedChunkSize;
+					const chunkHeight = Math.min(adjustedChunkSize, height - yPos);
+
+					for (let cx = 0; cx < chunksX; cx++) {
+							const xPos = cx * adjustedChunkSize;
+							const chunkWidth = Math.min(adjustedChunkSize, width - xPos);
+							
+							// Convert chunk position to texture space
+							const textureX = Math.floor(xPos * (width / imageData.width));
+							const textureY = Math.floor(yPos * (height / imageData.height));
+							const textureWidth = Math.ceil(chunkWidth * (width / imageData.width));
+							const textureHeight = Math.ceil(chunkHeight * (height / imageData.height));
+
+							// Check if chunk has any non-transparent pixels
+							let hasOpaquePixel = false;
+							
+							for (let py = textureY; py < textureY + textureHeight && py < imageData.height; py++) {
+									const rowOffset = py * imageData.width;
+									for (let px = textureX; px < textureX + textureWidth && px < imageData.width; px++) {
+											if ((dataU32[rowOffset + px] >>> 24) > 0) {
+													hasOpaquePixel = true;
+													rectangles.push({
+															x: x + xPos,
+															y: y + yPos,
+															width: chunkWidth,
+															height: chunkHeight
+													});
+													py = textureY + textureHeight; // Break outer loop
+													break;
+											}
+									}
+							}
+					}
+			}
+	}
+
+	// Apply matrix transform to graphics to handle zoom
+	maskGraphics.transform.setFromMatrix(stage.transform.worldTransform);
+
+	// Draw all rectangles individually
+	for (const rect of rectangles) {
+			// Convert rectangle coordinates to local space
+			const localX = rect.x / sceneScale;
+			const localY = rect.y / sceneScale;
+			const localWidth = rect.width / sceneScale;
+			const localHeight = rect.height / sceneScale;
+			
+			maskGraphics.drawRect(localX, localY, localWidth, localHeight);
+	}
+
+	// Reset transform
+	maskGraphics.transform.setFromMatrix(new PIXI.Matrix());
+
+	// Clean up
+	tempCanvas.remove();
+	return maskGraphics;
+}
+
+// 4/10 performance cpu version
+function createOcclusionMask_cpu4(token, intersectingTiles, chunkSize = 3) {
+	const maskGraphics = new PIXI.Graphics();
+	maskGraphics.beginFill(0xffffff);
+
+	// Get the current scene scale
+	const stage = token.mesh.parent;
+	const sceneScale = stage?.scale?.x ?? 1;
+	
+	// Define minimum dimension here so it's available in the entire function scope
+	const minDimension = 1 / sceneScale;
+	
+	// Adjust chunk size based on scene scale
+	const adjustedChunkSize = Math.max(chunkSize / sceneScale, 1);
+
+	// Create a single reusable canvas with maximum expected size
+	const maxSize = Math.max(
+			...intersectingTiles.map(tile => Math.max(tile.mesh.width, tile.mesh.height))
+	);
+	const tempCanvas = document.createElement('canvas');
+	tempCanvas.width = maxSize;
+	tempCanvas.height = maxSize;
+	const tempCtx = tempCanvas.getContext('2d', { 
+			willReadFrequently: true,
+			alpha: true 
+	});
+
+	// Pre-allocate typed arrays for better performance
+	const tokenBounds = token.mesh.getBounds(false, undefined);
+	const rectangles = [];
+
+	for (const tile of intersectingTiles) {
+			const tileBounds = tile.mesh.getBounds(false, undefined);
+			
+			// Calculate intersection area in global space
+			const x = Math.max(tokenBounds.x, tileBounds.x);
+			const y = Math.max(tokenBounds.y, tileBounds.y);
+			const width = Math.min(tokenBounds.x + tokenBounds.width, tileBounds.x + tileBounds.width) - x;
+			const height = Math.min(tokenBounds.y + tokenBounds.height, tileBounds.y + tileBounds.height) - y;
+			
+			// Validate intersection dimensions
+			if (width <= 0 || height <= 0) continue;
+			
+			// Ensure minimum dimensions
+			if (width < minDimension || height < minDimension) continue;
+
+			const tileTexture = tile.texture?.baseTexture?.resource?.source;
+			if (!tileTexture || tileTexture.width <= 0 || tileTexture.height <= 0) continue;
+
+			// Calculate source and destination rectangles
+			const sourceX = (x - tileBounds.x) * (tileTexture.width / tileBounds.width);
+			const sourceY = (y - tileBounds.y) * (tileTexture.height / tileBounds.height);
+			const sourceWidth = width * (tileTexture.width / tileBounds.width);
+			const sourceHeight = height * (tileTexture.height / tileBounds.height);
+
+			// Validate source dimensions
+			if (sourceWidth <= 0 || sourceHeight <= 0) continue;
+			if (sourceX >= tileTexture.width || sourceY >= tileTexture.height) continue;
+
+			// Calculate actual canvas dimensions needed
+			const canvasWidth = Math.ceil(Math.max(1, width));
+			const canvasHeight = Math.ceil(Math.max(1, height));
+
+			// Update canvas size if needed
+			if (tempCanvas.width < canvasWidth) tempCanvas.width = canvasWidth;
+			if (tempCanvas.height < canvasHeight) tempCanvas.height = canvasHeight;
+
+			// Clear only the required portion
+			tempCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+			
+			try {
+					// Draw the relevant portion of the tile
+					tempCtx.drawImage(tileTexture,
+							Math.max(0, sourceX),
+							Math.max(0, sourceY),
+							Math.min(sourceWidth, tileTexture.width - sourceX),
+							Math.min(sourceHeight, tileTexture.height - sourceY),
+							0, 0, canvasWidth, canvasHeight
+					);
+
+					// Get image data for the intersection area
+					const imageData = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+					const dataU32 = new Uint32Array(imageData.data.buffer);
+
+					// Process chunks in world space
+					const chunksX = Math.ceil(width / adjustedChunkSize);
+					const chunksY = Math.ceil(height / adjustedChunkSize);
+
+					for (let cy = 0; cy < chunksY; cy++) {
+							const yPos = cy * adjustedChunkSize;
+							const chunkHeight = Math.min(adjustedChunkSize, height - yPos);
+
+							for (let cx = 0; cx < chunksX; cx++) {
+									const xPos = cx * adjustedChunkSize;
+									const chunkWidth = Math.min(adjustedChunkSize, width - xPos);
+									
+									// Convert chunk position to texture space
+									const textureX = Math.floor(xPos * (canvasWidth / width));
+									const textureY = Math.floor(yPos * (canvasHeight / height));
+									const textureWidth = Math.ceil(chunkWidth * (canvasWidth / width));
+									const textureHeight = Math.ceil(chunkHeight * (canvasHeight / height));
+
+									// Validate texture coordinates
+									if (textureX >= canvasWidth || textureY >= canvasHeight) continue;
+									if (textureWidth <= 0 || textureHeight <= 0) continue;
+
+									// Check if chunk has any non-transparent pixels
+									let hasOpaquePixel = false;
+									
+									for (let py = textureY; py < Math.min(textureY + textureHeight, canvasHeight); py++) {
+											const rowOffset = py * canvasWidth;
+											for (let px = textureX; px < Math.min(textureX + textureWidth, canvasWidth); px++) {
+													if ((dataU32[rowOffset + px] >>> 24) > 0) {
+															hasOpaquePixel = true;
+															rectangles.push({
+																	x: x + xPos,
+																	y: y + yPos,
+																	width: chunkWidth,
+																	height: chunkHeight
+															});
+															py = canvasHeight; // Break outer loop
+															break;
+													}
+											}
+									}
+							}
+					}
+			} catch (error) {
+					console.warn('Error processing tile:', error);
+					continue;
+			}
+	}
+
+	// Apply matrix transform to graphics to handle zoom
+	maskGraphics.transform.setFromMatrix(stage.transform.worldTransform);
+
+	// Draw all rectangles individually
+	for (const rect of rectangles) {
+			// Convert rectangle coordinates to local space and ensure minimum dimensions
+			const localX = rect.x / sceneScale;
+			const localY = rect.y / sceneScale;
+			const localWidth = Math.max(rect.width / sceneScale, minDimension);
+			const localHeight = Math.max(rect.height / sceneScale, minDimension);
+			
+			maskGraphics.drawRect(localX, localY, localWidth, localHeight);
+	}
+
+	// Reset transform
+	maskGraphics.transform.setFromMatrix(new PIXI.Matrix());
+
+	// Clean up
+	tempCanvas.remove();
+	return maskGraphics;
+}
+
+// 2/10 versão com LOD, melhor performance, mas muito pixelado
+function createOcclusionMask_cpu210(token, intersectingTiles, baseChunkSize = 1) {
+	const maskGraphics = new PIXI.Graphics();
+	maskGraphics.beginFill(0xffffff);
+
+	// Get the current scene scale
+	const stage = token.mesh.parent;
+	const sceneScale = stage?.scale?.x ?? 1;
+	
+	// LOD System - Adjust chunk size based on zoom level
+	function calculateLODChunkSize(baseSize, scale) {
+			// Zoom out (scale < 1) = bigger chunks for better performance
+			// Zoom in (scale > 1) = smaller chunks for better detail
+			if (scale >= 2) return baseSize; // Maximum detail
+			if (scale >= 1) return baseSize * 1.5;
+			if (scale >= 0.5) return baseSize * 2;
+			if (scale >= 0.25) return baseSize * 4;
+			return baseSize * 8; // Minimum detail for very zoomed out views
+	}
+
+	// Calculate chunk size based on current zoom level
+	const dynamicChunkSize = calculateLODChunkSize(baseChunkSize, sceneScale);
+	
+	// Define minimum dimension here so it's available in the entire function scope
+	const minDimension = 1 / sceneScale;
+	
+	// Adjust chunk size based on scene scale
+	const adjustedChunkSize = Math.max(dynamicChunkSize / sceneScale, 1);
+
+	// Debug LOD level if needed
+	// console.debug(`Zoom: ${sceneScale}, Chunk Size: ${dynamicChunkSize}, Adjusted: ${adjustedChunkSize}`);
+
+	// Create a single reusable canvas with maximum expected size
+	const maxSize = Math.max(
+			...intersectingTiles.map(tile => Math.max(tile.mesh.width, tile.mesh.height))
+	);
+	const tempCanvas = document.createElement('canvas');
+	tempCanvas.width = maxSize;
+	tempCanvas.height = maxSize;
+	const tempCtx = tempCanvas.getContext('2d', { 
+			willReadFrequently: true,
+			alpha: true 
+	});
+
+	// Pre-allocate typed arrays for better performance
+	const tokenBounds = token.mesh.getBounds(false, undefined);
+	const rectangles = [];
+
+	// Cache for LOD processing
+	const processedAreas = new Map();
+
+	for (const tile of intersectingTiles) {
+			const tileBounds = tile.mesh.getBounds(false, undefined);
+			
+			// Calculate intersection area in global space
+			const x = Math.max(tokenBounds.x, tileBounds.x);
+			const y = Math.max(tokenBounds.y, tileBounds.y);
+			const width = Math.min(tokenBounds.x + tokenBounds.width, tileBounds.x + tileBounds.width) - x;
+			const height = Math.min(tokenBounds.y + tokenBounds.height, tileBounds.y + tileBounds.height) - y;
+			
+			// Validate intersection dimensions
+			if (width <= 0 || height <= 0) continue;
+			
+			// Ensure minimum dimensions
+			if (width < minDimension || height < minDimension) continue;
+
+			const tileTexture = tile.texture?.baseTexture?.resource?.source;
+			if (!tileTexture || tileTexture.width <= 0 || tileTexture.height <= 0) continue;
+
+			// Calculate source and destination rectangles
+			const sourceX = (x - tileBounds.x) * (tileTexture.width / tileBounds.width);
+			const sourceY = (y - tileBounds.y) * (tileTexture.height / tileBounds.height);
+			const sourceWidth = width * (tileTexture.width / tileBounds.width);
+			const sourceHeight = height * (tileTexture.height / tileBounds.height);
+
+			// Validate source dimensions
+			if (sourceWidth <= 0 || sourceHeight <= 0) continue;
+			if (sourceX >= tileTexture.width || sourceY >= tileTexture.height) continue;
+
+			// LOD-based sampling rate for texture analysis
+			const samplingRate = Math.max(1, Math.floor(4 / sceneScale)); // Increase sampling rate when zoomed out
+
+			// Calculate actual canvas dimensions needed with LOD consideration
+			const canvasWidth = Math.ceil(Math.max(1, width / samplingRate));
+			const canvasHeight = Math.ceil(Math.max(1, height / samplingRate));
+
+			// Update canvas size if needed
+			if (tempCanvas.width < canvasWidth) tempCanvas.width = canvasWidth;
+			if (tempCanvas.height < canvasHeight) tempCanvas.height = canvasHeight;
+
+			// Clear only the required portion
+			tempCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+			
+			try {
+					// Draw the relevant portion of the tile with LOD-based scaling
+					tempCtx.drawImage(tileTexture,
+							Math.max(0, sourceX),
+							Math.max(0, sourceY),
+							Math.min(sourceWidth, tileTexture.width - sourceX),
+							Math.min(sourceHeight, tileTexture.height - sourceY),
+							0, 0, canvasWidth, canvasHeight
+					);
+
+					// Get image data for the intersection area
+					const imageData = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+					const dataU32 = new Uint32Array(imageData.data.buffer);
+
+					// Process chunks in world space
+					const chunksX = Math.ceil(width / adjustedChunkSize);
+					const chunksY = Math.ceil(height / adjustedChunkSize);
+
+					for (let cy = 0; cy < chunksY; cy++) {
+							const yPos = cy * adjustedChunkSize;
+							const chunkHeight = Math.min(adjustedChunkSize, height - yPos);
+
+							for (let cx = 0; cx < chunksX; cx++) {
+									const xPos = cx * adjustedChunkSize;
+									const chunkWidth = Math.min(adjustedChunkSize, width - xPos);
+
+									// LOD-based chunk caching
+									const chunkKey = `${Math.floor(x + xPos)},${Math.floor(y + yPos)}`;
+									if (processedAreas.has(chunkKey)) continue;
+									
+									// Convert chunk position to texture space considering LOD sampling
+									const textureX = Math.floor(xPos * (canvasWidth / width));
+									const textureY = Math.floor(yPos * (canvasHeight / height));
+									const textureWidth = Math.ceil(chunkWidth * (canvasWidth / width));
+									const textureHeight = Math.ceil(chunkHeight * (canvasHeight / height));
+
+									// Validate texture coordinates
+									if (textureX >= canvasWidth || textureY >= canvasHeight) continue;
+									if (textureWidth <= 0 || textureHeight <= 0) continue;
+
+									// Check if chunk has any non-transparent pixels with LOD-based sampling
+									let hasOpaquePixel = false;
+									
+									// Adjust sampling step based on zoom level
+									const pixelStep = Math.max(1, Math.floor(1 / sceneScale));
+									
+									for (let py = textureY; py < Math.min(textureY + textureHeight, canvasHeight); py += pixelStep) {
+											const rowOffset = py * canvasWidth;
+											for (let px = textureX; px < Math.min(textureX + textureWidth, canvasWidth); px += pixelStep) {
+													if ((dataU32[rowOffset + px] >>> 24) > 0) {
+															hasOpaquePixel = true;
+															const rect = {
+																	x: x + xPos,
+																	y: y + yPos,
+																	width: chunkWidth,
+																	height: chunkHeight
+															};
+															rectangles.push(rect);
+															processedAreas.set(chunkKey, rect);
+															py = canvasHeight; // Break outer loop
+															break;
+													}
+											}
+									}
+							}
+					}
+			} catch (error) {
+					console.warn('Error processing tile:', error);
+					continue;
+			}
+	}
+
+	// Apply matrix transform to graphics to handle zoom
+	maskGraphics.transform.setFromMatrix(stage.transform.worldTransform);
+
+	// Draw all rectangles individually with LOD-based merging
+	const mergedRectangles = mergeAdjacentRectangles(rectangles, sceneScale);
+	for (const rect of mergedRectangles) {
+			// Convert rectangle coordinates to local space and ensure minimum dimensions
+			const localX = rect.x / sceneScale;
+			const localY = rect.y / sceneScale;
+			const localWidth = Math.max(rect.width / sceneScale, minDimension);
+			const localHeight = Math.max(rect.height / sceneScale, minDimension);
+			
+			maskGraphics.drawRect(localX, localY, localWidth, localHeight);
+	}
+
+	// Reset transform
+	maskGraphics.transform.setFromMatrix(new PIXI.Matrix());
+
+	// Clean up
+	tempCanvas.remove();
+	processedAreas.clear();
+	return maskGraphics;
+}
+// Helper function to merge adjacent rectangles for LOD optimization
+function mergeAdjacentRectangles(rectangles, scale) {
+	if (scale >= 1) return rectangles; // Don't merge when zoomed in
+	
+	const merged = [...rectangles];
+	let didMerge;
+	
+	do {
+			didMerge = false;
+			for (let i = 0; i < merged.length; i++) {
+					for (let j = i + 1; j < merged.length; j++) {
+							const r1 = merged[i];
+							const r2 = merged[j];
+							
+							// Check if rectangles are adjacent
+							if (areRectanglesAdjacent(r1, r2)) {
+									// Merge rectangles
+									const mergedRect = {
+											x: Math.min(r1.x, r2.x),
+											y: Math.min(r1.y, r2.y),
+											width: Math.max(r1.x + r1.width, r2.x + r2.width) - Math.min(r1.x, r2.x),
+											height: Math.max(r1.y + r1.height, r2.y + r2.height) - Math.min(r1.y, r2.y)
+									};
+									
+									// Replace r1 with merged rectangle and remove r2
+									merged[i] = mergedRect;
+									merged.splice(j, 1);
+									didMerge = true;
+									break;
+							}
+					}
+					if (didMerge) break;
+			}
+	} while (didMerge);
+	
+	return merged;
+}
+// Helper function to check if two rectangles are adjacent
+function areRectanglesAdjacent(r1, r2) {
+	const tolerance = 0.1; // Tolerance for floating point comparisons
+	
+	// Check if rectangles are touching horizontally
+	const horizontallyAdjacent = 
+			Math.abs((r1.x + r1.width) - r2.x) < tolerance ||
+			Math.abs((r2.x + r2.width) - r1.x) < tolerance;
+	
+	// Check if rectangles are touching vertically
+	const verticallyAdjacent = 
+			Math.abs((r1.y + r1.height) - r2.y) < tolerance ||
+			Math.abs((r2.y + r2.height) - r1.y) < tolerance;
+	
+	// Check if rectangles overlap in the other dimension
+	const horizontalOverlap = 
+			(r1.y <= r2.y + r2.height + tolerance) && 
+			(r2.y <= r1.y + r1.height + tolerance);
+	
+	const verticalOverlap = 
+			(r1.x <= r2.x + r2.width + tolerance) && 
+			(r2.x <= r1.x + r1.width + tolerance);
+	
+	return (horizontallyAdjacent && horizontalOverlap) || 
+				 (verticallyAdjacent && verticalOverlap);
+}
+
+// 4/10 versão otimizada 2 (não senti muita diferença)
+function createOcclusionMask_cpu(token, intersectingTiles, chunkSize = 1) {
+	const maskGraphics = new PIXI.Graphics();
+	maskGraphics.beginFill(0xffffff);
+
+	// Get the current scene scale
+	const stage = token.mesh.parent;
+	const sceneScale = stage?.scale?.x ?? 1;
+	const minDimension = 1 / sceneScale;
+	const adjustedChunkSize = Math.max(chunkSize / sceneScale, 1);
+
+	// Create a single reusable canvas
+	const tempCanvas = document.createElement('canvas');
+	tempCanvas.width = 256;  // Start smaller, will grow if needed
+	tempCanvas.height = 256;
+	const tempCtx = tempCanvas.getContext('2d', { 
+		willReadFrequently: true,
+		alpha: true 
+	});
+
+	// Pre-calculate token bounds once
+	const tokenBounds = token.mesh.getBounds(false, undefined);
+  
+	// Pre-allocate arrays for better memory management
+	const rectangles = [];
+
+	// Reusable objects to avoid garbage collection
+	const intersection = {x: 0, y: 0, width: 0, height: 0};
+	const source = {x: 0, y: 0, width: 0, height: 0};
+
+	for (const tile of intersectingTiles) {
+		// Skip invalid tiles early
+		const tileTexture = tile.texture?.baseTexture?.resource?.source;
+		if (!tileTexture?.width || !tileTexture?.height) continue;
+
+		const tileBounds = tile.mesh.getBounds(false, undefined);
+
+		// Calculate intersection
+		intersection.x = Math.max(tokenBounds.x, tileBounds.x);
+		intersection.y = Math.max(tokenBounds.y, tileBounds.y);
+		intersection.width = Math.min(tokenBounds.x + tokenBounds.width, tileBounds.x + tileBounds.width) - intersection.x;
+		intersection.height = Math.min(tokenBounds.y + tokenBounds.height, tileBounds.y + tileBounds.height) - intersection.y;
+
+		// Early rejection tests
+		if (intersection.width <= minDimension || intersection.height <= minDimension) continue;
+
+		// Calculate source rectangle
+		const scaleX = tileTexture.width / tileBounds.width;
+		const scaleY = tileTexture.height / tileBounds.height;
+    
+		source.x = Math.max(0, (intersection.x - tileBounds.x) * scaleX);
+		source.y = Math.max(0, (intersection.y - tileBounds.y) * scaleY);
+		source.width = Math.min(intersection.width * scaleX, tileTexture.width - source.x);
+		source.height = Math.min(intersection.height * scaleY, tileTexture.height - source.y);
+
+		// Validate source dimensions
+		if (source.width <= 0 || source.height <= 0) continue;
+
+		// Calculate canvas dimensions
+		const canvasWidth = Math.ceil(intersection.width * scaleX);
+		const canvasHeight = Math.ceil(intersection.height * scaleY);
+
+		// Resize canvas if necessary
+		if (tempCanvas.width < canvasWidth) tempCanvas.width = canvasWidth;
+		if (tempCanvas.height < canvasHeight) tempCanvas.height = canvasHeight;
+
+		tempCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+		try {
+			// Draw tile portion
+			tempCtx.drawImage(tileTexture,
+				source.x,
+				source.y,
+				source.width,
+				source.height,
+				0, 0, canvasWidth, canvasHeight
+			);
+
+			// Get image data and process in chunks
+			const imageData = tempCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+			const dataU32 = new Uint32Array(imageData.data.buffer);
+
+			// Process chunks
+			const chunksX = Math.ceil(intersection.width / adjustedChunkSize);
+			const chunksY = Math.ceil(intersection.height / adjustedChunkSize);
+
+			for (let cy = 0; cy < chunksY; cy++) {
+				const yPos = cy * adjustedChunkSize;
+				const chunkHeight = Math.min(adjustedChunkSize, intersection.height - yPos);
+
+				for (let cx = 0; cx < chunksX; cx++) {
+					const xPos = cx * adjustedChunkSize;
+					const chunkWidth = Math.min(adjustedChunkSize, intersection.width - xPos);
+
+					// Convert chunk position to texture space
+					const textureX = Math.floor(xPos * (canvasWidth / intersection.width));
+					const textureY = Math.floor(yPos * (canvasHeight / intersection.height));
+					const textureWidth = Math.ceil(chunkWidth * (canvasWidth / intersection.width));
+					const textureHeight = Math.ceil(chunkHeight * (canvasHeight / intersection.height));
+
+					// Check for non-transparent pixels
+					let hasOpaquePixel = false;
+          
+					for (let py = textureY; py < Math.min(textureY + textureHeight, canvasHeight); py++) {
+						const rowOffset = py * canvasWidth;
+						for (let px = textureX; px < Math.min(textureX + textureWidth, canvasWidth); px++) {
+							if ((dataU32[rowOffset + px] >>> 24) > 0) {
+								hasOpaquePixel = true;
+								rectangles.push({
+									x: intersection.x + xPos,
+									y: intersection.y + yPos,
+									width: chunkWidth,
+									height: chunkHeight
+								});
+								py = canvasHeight; // Break outer loop
+								break;
+							}
+						}
+					}
+				}
+			}
+		} catch (error) {
+			console.warn('Error processing tile:', error);
+			continue;
+		}
+	}
+
+	// Apply matrix transform
+	maskGraphics.transform.setFromMatrix(stage.transform.worldTransform);
+
+	// Draw rectangles
+	for (const rect of rectangles) {
+		maskGraphics.drawRect(
+			rect.x / sceneScale,
+			rect.y / sceneScale,
+			Math.max(rect.width / sceneScale, minDimension),
+			Math.max(rect.height / sceneScale, minDimension)
+		);
+	}
+
+	maskGraphics.transform.setFromMatrix(new PIXI.Matrix());
+	tempCanvas.remove();
+	return maskGraphics;
+}
 
 
 

@@ -8,6 +8,8 @@ import { applyIsometricPerspective, applyBackgroundTransformation } from './tran
 import { ISOMETRIC_CONST } from './consts.js';
 import { isoToCartesian, cartesianToIso } from './utils.js';
 
+//import { registerOcclusionConfig } from './silhouetetoken.js';
+import { registerOcclusionConfig } from './occlusion.js';
 //import { registerOcclusionConfig } from './occlusion2 v15 (cpu gpu choose).js';  // choose between cpu (working, heavy on performance) and gpu (not fully working)
 //import { registerOcclusionConfig } from './occlusion2 v21 (simple test 2).js';   // different approach to solution (not fully working)
 //import { registerOcclusionConfig } from './occlusion3.js';                       // has token-token occlusion (not fully working)
@@ -90,6 +92,27 @@ Hooks.once("init", function() {
   });
   */
   
+  game.settings.register(MODULE_ID, 'enableOcclusionTokenSilhouette', {
+    name: game.i18n.localize('isometric-perspective.settings_token_silhouette_name'), //'Enable Occlusion: Token Silhouette',
+    hint: game.i18n.localize('isometric-perspective.settings_token_silhouette_hint'), //'Adjusts the visibility of tiles dynamically with the positioning of tokens.',
+    scope: 'client',
+    config: true,
+    type: String,
+    choices: {
+      "off": "Off",
+      "gpu": "GPU Mode",
+      "cpu1": "CPU Mode (Chunk Size 1)",
+      "cpu2": "CPU Mode (Chunk Size 2)",
+      "cpu3": "CPU Mode (Chunk Size 3)", 
+      "cpu4": "CPU Mode (Chunk Size 4)",
+      "cpu6": "CPU Mode (Chunk Size 6)",
+      "cpu8": "CPU Mode (Chunk Size 8)",
+      "cpu10": "CPU Mode (Chunk Size 10)"
+    },
+    default: "off",
+    requiresReload: true
+  });
+
   game.settings.register(MODULE_ID, 'debug', {
     name: game.i18n.localize('isometric-perspective.settings_debug_name'), //name: 'Enable Debug Mode',
     hint: game.i18n.localize('isometric-perspective.settings_debug_hint'), //hint: 'Enables debug prints.',
@@ -153,7 +176,7 @@ Hooks.once("init", function() {
   // ------------- Executa os hooks de funcionalidades adicionais do módulo -------------
   registerDynamicTileConfig();
   registerSortingConfig();
-  //registerOcclusionConfig();
+  registerOcclusionConfig();
 
   
   

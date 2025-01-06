@@ -20,7 +20,8 @@ async function handleRenderTileConfig(app, html, data) {
     isFlipped: app.object.getFlag(MODULE_ID, 'tokenFlipped') ?? false,
     offsetX: app.object.getFlag(MODULE_ID, 'offsetX') ?? 0,
     offsetY: app.object.getFlag(MODULE_ID, 'offsetY') ?? 0,
-    linkedWallIds: wallIdsString
+    linkedWallIds: wallIdsString,
+    isOccluding: app.object.getFlag(MODULE_ID, 'OccludingTile') ?? false
   });
 
   // Adiciona a nova aba ao menu
@@ -50,10 +51,12 @@ async function handleRenderTileConfig(app, html, data) {
   const isoTileCheckbox = html.find('input[name="flags.isometric-perspective.isoTileDisabled"]');
   const flipCheckbox = html.find('input[name="flags.isometric-perspective.tokenFlipped"]');
   const linkedWallInput = html.find('input[name="flags.isometric-perspective.linkedWallIds"]');
+  const occludingCheckbox = html.find('input[name="flags.isometric-perspective.OccludingTile"]');
   
   isoTileCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "isoTileDisabled"));
   flipCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "tokenFlipped"));
   linkedWallInput.val(wallIdsString);
+  occludingCheckbox.prop("checked", app.object.getFlag(MODULE_ID, "OccludingTile"));
   
   // Adiciona listener para atualizar o valor exibido do slider
   html.find('.scale-slider').on('input', function() {
@@ -74,6 +77,12 @@ async function handleRenderTileConfig(app, html, data) {
       await app.object.setFlag(MODULE_ID, "tokenFlipped", true);
     } else {
       await app.object.unsetFlag(MODULE_ID, "tokenFlipped");
+    }
+
+    if (html.find('input[name="flags.isometric-perspective.OccludingTile"]').prop("checked")) {
+      await app.object.setFlag(MODULE_ID, "OccludingTile", true);
+    } else {
+      await app.object.unsetFlag(MODULE_ID, "OccludingTile");
     }
 
     // dynamictile.js linked wall logic
