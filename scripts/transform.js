@@ -145,6 +145,12 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
         sy = 1
         break;
       default:
+        // V11 Compatibility change
+        if (game.version.startsWith("11")) {
+          sx = (objTxtRatio_W) / (objTxtRatio_H);
+          sy = 1;
+          break;
+        }
         //throw new Error(`Invalid fill type passed to ${this.constructor.name}#resize (fit=${fit}).`);
         console.warn("Invalid fill type passed to: ", object);
         sx = 1;
