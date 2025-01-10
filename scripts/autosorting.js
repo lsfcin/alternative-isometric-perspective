@@ -4,6 +4,7 @@ export function registerSortingConfig() {
   const isometricWorldEnabled = game.settings.get(MODULE_ID, "worldIsometricFlag");
   const enableAutoSorting = game.settings.get(MODULE_ID, "enableAutoSorting");
   if (!isometricWorldEnabled || !enableAutoSorting) return;
+  if (game.version.startsWith("11")) return; //There isn't a sort method on v11. Needs another way to sort.
 
   Hooks.on('createToken', async (tokenDocument, options, userId) => {
     // If the movement is from the current user

@@ -376,3 +376,35 @@ Hooks.on('canvasReady', () => {
 Hooks.on('deleteToken', (token) => {
   removeTokenVisuals(token);
 });
+
+
+
+
+
+
+// HOOK SETUP FOR COMPATIBILITY WITH FOUNDRY V11
+Hooks.once('init', () => {
+  setupCompatibilityHooks();
+});
+
+function setupCompatibilityHooks() {
+  if (game.version.startsWith("11")) {
+    Hooks.on('dropCanvasData', (canvas, object) => {
+      const globalPoint = {
+        x: event.clientX,
+        y: event.clientY
+      };
+  
+      // Converts to local coordinates of the stage
+      const localPos = canvas.stage.toLocal(globalPoint);
+      object.x = Math.round(localPos.x);
+      object.y = Math.round(localPos.y);
+    });
+    // Hooks.on('dropCanvasData', (canvas, object) => {
+    //   let {x, y} = canvas.stage.worldTransform.applyInverse({x: event.clientX, y: event.clientY})
+
+    //   object.x = x;
+    //   object.y = y;
+    // });
+  }
+}

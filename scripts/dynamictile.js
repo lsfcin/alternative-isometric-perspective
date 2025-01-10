@@ -280,6 +280,16 @@ function cloneTokenSprite(token) {
     sprite.alpha = token.alpha * tokensOpacity;
     sprite.eventMode = 'passive';
     sprite.originalToken = token;
+
+    // Clone filters if they exist
+    if (token.filters && token.filters.length > 0) {
+      sprite.filters = token.filters.map(filter => {
+        const newFilter = new filter.constructor(filter.uniforms);
+        Object.assign(newFilter, filter);
+        return newFilter;
+      });
+    }
+
     return sprite;
   } catch (error) {
     console.error("Erro ao clonar sprite do token:", error);
