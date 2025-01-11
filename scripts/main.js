@@ -18,10 +18,12 @@ import { registerOcclusionConfig } from './occlusion.js';
 const MODULE_ID = "isometric-perspective";
 let DEBUG_PRINT;
 let WORLD_ISO_FLAG;
+let FOUNDRY_VERSION;
 
 export { MODULE_ID };
 export { DEBUG_PRINT };
 export { WORLD_ISO_FLAG };
+export { FOUNDRY_VERSION };
 
 
 // Hook to register module configuration in Foundry VTT
@@ -192,9 +194,7 @@ Hooks.once("init", function() {
     WORLD_ISO_FLAG = true;
   else WORLD_ISO_FLAG = false;
   
-});
-
-
+  FOUNDRY_VERSION = parseInt(game.version.split(".")[0]); // Extrai a versão principal
 
 
 

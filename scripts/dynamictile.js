@@ -1,4 +1,4 @@
-import { MODULE_ID, DEBUG_PRINT } from './main.js';
+import { MODULE_ID, DEBUG_PRINT, FOUNDRY_VERSION } from './main.js';
 
 export function registerDynamicTileConfig() {
   const enableOcclusionDynamicTile = game.settings.get(MODULE_ID, "enableOcclusionDynamicTile");
@@ -545,12 +545,14 @@ function getWallDirection(x1, y1, x2, y2) {
 * @returns {boolean} - true se o token estiver em frente à parede, false caso contrário
 */
 function isTokenInFrontOfWall(token, wall) {
-  if (!wall?.edge?.a || !wall?.edge?.b || !token?.center) {
-    return false;
+  if (FOUNDRY_VERSION === 11) {
+    if (!wall?.A || !wall?.B || !token?.center) return false;
+  } else {
+    if (!wall?.edge?.a || !wall?.edge?.b || !token?.center) return false;
   }
 
-  const { x: x1, y: y1 } = wall.edge.a;
-  const { x: x2, y: y2 } = wall.edge.b;
+  const { x: x1, y: y1 } = FOUNDRY_VERSION === 11 ? wall.A : wall.edge.a;
+  const { x: x2, y: y2 } = FOUNDRY_VERSION === 11 ? wall.B : wall.edge.b;
   const { x: tokenX, y: tokenY } = token.center;
 
   // Verifica se a parede é horizontal (ângulo próximo a 0°)
@@ -607,12 +609,13 @@ function canTokenSeeWall(token, wall) {
   if (!isInFront) return false;
 
   // Verifica colisão com outros objetos entre o token e os pontos da parede
-  const wallPoints = [wall.edge.a, wall.center, wall.edge.b];
+  const wallPoints = FOUNDRY_VERSION === 11 ? [wall.A, wall.center, wall.B] : [wall.edge.a, wall.center, wall.edge.b];
   const tokenPosition = token.center;
 
   for (const point of wallPoints) {
+    const visibilityTest = FOUNDRY_VERSION === 11 ? canvas.effects.visibility.testVisibility(point, { tolerance: 2 }) : canvas.visibility?.testVisibility(point, { tolerance: 2 });
     // Usa o testVisibility do token para verificar se ele pode ver o ponto
-    if (canvas.visibility?.testVisibility(point, { tolerance: 2 })) {
+    if (visibilityTest) {
       const ray = new Ray(tokenPosition, point);
       const collision = CONFIG.Canvas.polygonBackends.sight.testCollision(ray.B, ray.A, { 
         mode: "any", 

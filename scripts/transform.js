@@ -1,4 +1,4 @@
-import { MODULE_ID, DEBUG_PRINT, WORLD_ISO_FLAG } from './main.js';
+import { MODULE_ID, DEBUG_PRINT, FOUNDRY_VERSION } from './main.js';
 import { cartesianToIso } from './utils.js';
 import { ISOMETRIC_CONST } from './consts.js';
 
@@ -146,7 +146,7 @@ export function applyIsometricTransformation(object, isSceneIsometric) {
         break;
       default:
         // V11 Compatibility change
-        if (game.version.startsWith("11")) {
+        if (FOUNDRY_VERSION === 11) {
           sx = (objTxtRatio_W) / (objTxtRatio_H);
           sy = 1;
           break;
@@ -388,7 +388,7 @@ Hooks.once('init', () => {
 });
 
 function setupCompatibilityHooks() {
-  if (game.version.startsWith("11")) {
+  if (FOUNDRY_VERSION === 11) {
     Hooks.on('dropCanvasData', (canvas, object) => {
       const globalPoint = {
         x: event.clientX,
