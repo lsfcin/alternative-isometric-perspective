@@ -115,6 +115,15 @@ Hooks.once("init", function() {
     requiresReload: true
   });
 
+  game.settings.register(MODULE_ID, "showWelcome", {
+    name: "Mostrar mensagem de boas-vindas",
+    hint: "Exibe uma mensagem de boas-vindas ao iniciar o Foundry VTT",
+    scope: "client",
+    config: true,
+    type: Boolean,
+    default: true
+  });
+
   game.settings.register(MODULE_ID, 'debug', {
     name: game.i18n.localize('isometric-perspective.settings_debug_name'), //name: 'Enable Debug Mode',
     hint: game.i18n.localize('isometric-perspective.settings_debug_hint'), //hint: 'Enables debug prints.',
@@ -193,8 +202,37 @@ Hooks.once("init", function() {
   if (game.settings.get(MODULE_ID, "worldIsometricFlag"))
     WORLD_ISO_FLAG = true;
   else WORLD_ISO_FLAG = false;
-  
+
   FOUNDRY_VERSION = parseInt(game.version.split(".")[0]); // Extrai a versão principal
+
+  
+});
+
+
+
+
+
+// Welcome Message Setup
+export class WelcomeScreen extends Application {
+  static get defaultOptions() {
+    return foundry.utils.mergeObject(super.defaultOptions, {
+      template: "modules/isometric-perspective/templates/welcome.html",
+      width: 600,
+      height: 620,
+      classes: ["welcome-screen"],
+      resizable: false,
+      title: "Isometric Perspective Module"
+    });
+  }
+}
+
+// Verifica se deve mostrar a tela de boas-vindas
+Hooks.once('ready', async function() {
+  if (game.settings.get(MODULE_ID, "showWelcome")) {
+    const welcome = new WelcomeScreen();
+    welcome.render(true);
+  }
+});
 
 
 

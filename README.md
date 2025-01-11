@@ -4,7 +4,7 @@
 
 
 
-![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v12+-blue)
+![Static Badge - Foundry VTT Version](https://img.shields.io/badge/Foundry%20VTT-v11+-blue)
 ![Latest Release version](https://img.shields.io/github/v/release/arlosmolten/isometric-perspective?color=green)
 ![Downloads Latest](https://img.shields.io/github/downloads/arlosmolten/isometric-perspective/isometric-perspective.zip?color=yellow)
 ![Static Badge - License](https://img.shields.io/badge/license%20-%20MIT-yellow)
@@ -19,9 +19,9 @@ This module changes the map, tiles and token artwork/sprite for use with maps an
 
 Here are some of the features the module offers.
 
-- **Dual Canvas Perspectives:** You can use top-down isometric or native isometric maps. In native isometric mode, you can adjust the scale of the map.
-- **Multiple Isometric Perspectives:** You can choose between different types of isometric projections, with different aspect ratios, such as the default true isometric (√3:1), dimetric (2:1), overhead (√2:1) and others specific to well-known old games. You can even add your own custom perspective using my own tool.
-- **Token Sprite Adjustments:** You can fine-tune the position of the token sprite, as well as its scale. Increasing the size of the token automatically increases the size of the sprite. You can adjust the token art sprite to be centered even if the token is assymetrical.
+- **Dual Canvas Perspectives:** You can use native isometric maps or top-down maps in isometric perspective. This way you can use any 2D map you want with the isometric perspective as well.
+- **Multiple Isometric Projections:** You can choose between different types of isometric projections, with different aspect ratios, such as the default true isometric (√3:1), dimetric (2:1), overhead (√2:1) and others specific to well-known old games. You can even add your own custom perspective using my own tool you can find [here](https://arlosmolten.github.io/isometric-perspective/).
+- **Token Sprite Adjustments:** You can fine-tune the position of the token sprite, as well as its scale. You can adjust the token art sprite to be centered even if the token is assymetrical. Increasing the token size automatically increases the sprite size, but you can disable this to use tokens with unconventional sizes (such as a tank that has dimensions of 2x1).
 - **Tile Sprite Adjustments:** You can also fine-tune the sprite position and scale, making easy to copy and paste multiple tiles. There's also a easy Flip Tile option.
 - **Token Height Visual Cues:** If a token has any elevation, its sprite adjusts to reflect the height, with a round shadow and line sprites being created for clarity.
 - **Dynamic Tile:** If you link a tile to a wall, the position of the token can make the tile invisible, and having a isometric game-like experience.
@@ -82,9 +82,9 @@ LockerView _(needs a 330° rotation to make a working isometric rotation)_
 
 - [ ] Code to handle tiles and walls.
 - [ ] Code to handle occlusion of tiles and tokens.
-- [ ] Different token art for isometric and top-down views.
-- [ ] Code to handle non symmetrical token sizes.
-- [ ] Translation to other languages.
+- [?] Different token art for isometric and top-down views.
+- [x] Code to handle non symmetrical token sizes.
+- [x] Translation to other languages.
 - [x] Add new perspectives.
 - [x] Add custom perspectives.
 - [x] Check compatibility with other canvas related modules.
