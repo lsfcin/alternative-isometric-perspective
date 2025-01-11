@@ -116,8 +116,8 @@ Hooks.once("init", function() {
   });
 
   game.settings.register(MODULE_ID, "showWelcome", {
-    name: "Mostrar mensagem de boas-vindas",
-    hint: "Exibe uma mensagem de boas-vindas ao iniciar o Foundry VTT",
+    name: game.i18n.localize('isometric-perspective.settings_welcome_name'),
+    hint: game.i18n.localize('isometric-perspective.settings_welcome_hint'),
     scope: "client",
     config: true,
     type: Boolean,
