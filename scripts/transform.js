@@ -383,7 +383,7 @@ Hooks.on('deleteToken', (token) => {
 
 
 // HOOK SETUP FOR COMPATIBILITY WITH FOUNDRY V11
-Hooks.once('init', () => {
+Hooks.once('ready', () => {
   setupCompatibilityHooks();
 });
 
