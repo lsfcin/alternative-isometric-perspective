@@ -281,14 +281,14 @@ function cloneTokenSprite(token) {
     sprite.eventMode = 'passive';
     sprite.originalToken = token;
 
-    // Clone filters if they exist
-    if (token.filters && token.filters.length > 0) {
-      sprite.filters = token.filters.map(filter => {
-        const newFilter = new filter.constructor(filter.uniforms);
-        Object.assign(newFilter, filter);
-        return newFilter;
-      });
-    }
+    // // Clone filters if they exist
+    // if (token.filters && token.filters.length > 0) {
+    //   sprite.filters = token.filters.map(filter => {
+    //     const newFilter = new filter.constructor(filter.uniforms);
+    //     Object.assign(newFilter, filter);
+    //     return newFilter;
+    //   });
+    // }
 
     return sprite;
   } catch (error) {
