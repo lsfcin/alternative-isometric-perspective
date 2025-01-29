@@ -13,11 +13,11 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/H2H1160UID)
 [![Discord](https://raw.githubusercontent.com/arlosmolten/isometric-perspective/refs/heads/main/files/discordsm.png)](https://discord.gg/64p6ZqQBNX)
 
-This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective.
+This module changes the map, tiles and token artwork/sprite for use with maps and tokens drawn using an isometric perspective. 
 
 ## Features
 
-Here are some of the features the module offers.
+Here are some of the features the module offers. You can also see how all the features of this module work with some videos on my [wiki](https://github.com/arlosmolten/isometric-perspective/wiki/1.-Core-Features).
 
 - **Dual Canvas Perspectives:** You can use native isometric maps or top-down maps in isometric perspective. This way you can use any 2D map you want with the isometric perspective as well.
 - **Multiple Isometric Projections:** You can choose between different types of isometric projections, with different aspect ratios, such as the default true isometric (√3:1), dimetric (2:1), overhead (√2:1) and others specific to well-known old games. You can even add your own custom perspective using my own tool you can find [here](https://arlosmolten.github.io/isometric-perspective/).
