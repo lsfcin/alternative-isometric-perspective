@@ -1,6 +1,6 @@
 {
-  "name": "isometric-perspective",
-  "version": "0.7.6",
+  "name": "alternative-isometric-perspective",
+  "version": "0.7.7",
   "description": "Isometric Module for Foundry VTT v12",
   "dependencies": {
     "archiver": "^5.3.1"
